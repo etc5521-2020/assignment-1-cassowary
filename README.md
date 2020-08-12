@@ -1,11 +1,11 @@
 # ETC5521 Assignment 1 
 
-Team name: [FILL]
+Team name: cassowary
 
 Team members:
 
-* [FILL]
-* [FILL]
+* Weihao Li
+* Dang Nguyen
 
 # Steps
 
