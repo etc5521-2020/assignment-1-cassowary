@@ -1,0 +1,70 @@
+---
+title: "Assignment 1"
+author: "Nguyen Dang Thanh"
+date: "8/18/2020"
+output: html_document
+---
+
+Data description:
+Copy from tidytuesday repo: 
+
+### Data Dictionary
+
+# `gdpr_violations.tsv`
+
+|variable         |class     |description |
+|:----------------|:---------|:-----------|
+|id               |integer   |Idetifier for fine/violation |
+|picture          |character | SVG image of violation country flag |
+|name             |character | Name of country where violation was enforced |
+|price            |integer   | Fine price in Euros (€) |
+|authority        |character | Authority that enacted the violation |
+|date             |character | Date of violation |
+|controller       |character | Controller of data - the violator |
+|article_violated |character | Specific GDPR Article violated (see the `gdpr_text.tsv` data for specifics) |
+|type             |character | Type of violation |
+|source           |character | Original source (URL) of fine data |
+|summary          |character | Summary of violation |
+
+# `gdpr_text.tsv`
+
+|variable      |class     |description |
+|:-------------|:---------|:-----------|
+|chapter       |double    | GDPR Chapter Number |
+|chapter_title |character | Chapter title |
+|article       |double    | GDPR Article number|
+|article_title |character | Article title|
+|sub_article   |double    | Sub article number |
+|gdpr_text     |character | Raw text of article/subarticle|
+|href          |character | URL to the raw text itself|
+
+
+Data explore:
+1. Some data dated back in 1970 -> No logic.
+2. In 2019, Google is fined 50 million euro. This case is an outlier.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r lib}
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+```
+
+```{r data}
+gdpr_violations <- readr::read_tsv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-04-21/gdpr_violations.tsv')
+
+
+```
+
+```{r}
+gdpr_violations <- gdpr_violations %>% mutate(Date = as.Date(date, format = "%m/%d/%Y"),
+                                              year = year(Date))
+p1 <- gdpr_violations %>% filter(year > 2017) %>% ggplot(aes(x = Date, y = price, color = name ))+
+  geom_point()
+
+ggplotly(p1)
+```
