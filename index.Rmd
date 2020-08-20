@@ -33,6 +33,10 @@ if (!(file.exists("data/gdpr_text.tsv") & file.exists("data/gdpr_violations.tsv"
 ```
 
 ```{r}
+`+.default` <- .Primitive('+')
+`+.character` <- paste0
+`+` <- function(e1, e2) UseMethod('+')
+
 gdpr_text <- read_tsv("data/gdpr_text.tsv")
 gdpr_vio <- read_tsv("data/gdpr_violations.tsv")
 ```
