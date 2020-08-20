@@ -5,8 +5,14 @@ date: "8/18/2020"
 output: html_document
 ---
 
-Data description:
-Copy from tidytuesday repo: 
+## Data description:
+ 
+The data is scraped from [Privacy Affairs] by [Ellis Hughes], posted on [Tidy Tuesday]. It collected data from 2018-05-12 to 2020-03-25. 
+
+The data consist of two smaller dataset: 
+1. GDPR_Violations.tsv contains information of fines and penalties which data protection authorities in EU have imposed under EU General Data Protection Regulation (GDPR). The data contain the country and authority, the date of violation, the fine price of violation in Euros, the controller that violate the rule, ... Detailed information of variable is presented below. 
+
+2. GDPR_text.tsv contains the actual GDPR legal document. 
 
 ### Data Dictionary
 
@@ -39,9 +45,6 @@ Copy from tidytuesday repo:
 |href          |character | URL to the raw text itself|
 
 
-Data explore:
-1. Some data dated back in 1970 -> No logic.
-2. In 2019, Google is fined 50 million euro. This case is an outlier.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -68,3 +71,9 @@ p1 <- gdpr_violations %>% filter(year > 2017) %>% ggplot(aes(x = Date, y = price
 
 ggplotly(p1)
 ```
+
+[Privacy Affairs]: https://www.privacyaffairs.com/gdpr-fines/
+
+[Ellis Hughes]: https://github.com/thebioengineer
+
+[Tidy Tuesday]: https://github.com/rfordatascience/tidytuesday
