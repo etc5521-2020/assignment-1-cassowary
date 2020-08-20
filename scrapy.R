@@ -53,7 +53,9 @@ all_df %>%
   separate_rows(article_violated, sep = "\\|") %>%
   count(article_violated, sort = T)
 
-
+# remove duplication
+all_df <- all_df %>%
+  distinct(id, .keep_all = TRUE)
 
 all_df %>%
   write_tsv("data/gdpr_violations.tsv")

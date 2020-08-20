@@ -1,13 +1,16 @@
 ---
 title: "ETC5521 Assignment 1"
-subtitle: "Your title"
+subtitle: "Fines or Taxes? Exploratory Data Analysis on General Data Protection Regulation Fines"
 team: cassowary
 author:
   - Weihao Li
   - Dang Nguyen
 date: "`r Sys.Date()`"
 output: 
-  html_document
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
 ---
 
 ```{r setup, include=FALSE}
@@ -28,13 +31,30 @@ library(lubridate)
 
 # Data description
 
-The data is scraped from [Privacy Affairs] by [Ellis Hughes], posted on [Tidy Tuesday]. It collected data from 2018-05-12 to 2020-03-25. 
+```{r}
+if (!(file.exists("data/gdpr_text.tsv") & file.exists("data/gdpr_violations.tsv"))){
+  source("scrapy.R")
+  rm(list = ls())
+  detach("package:rvest", unload=TRUE)
+}
+```
+
+```{r}
+`+.default` <- .Primitive('+')
+`+.character` <- paste0
+`+` <- function(e1, e2) UseMethod('+')
+
+gdpr_text <- read_tsv("data/gdpr_text.tsv")
+gdpr_vio <- read_tsv("data/gdpr_violations.tsv")
+```
+
+The data is scraped from [Privacy Affairs] by [Ellis Hughes], posted on [Tidy Tuesday]. It collected data from 2018-05-12 to 2020-03-25. We adapted the scripts they used and removed duplication due to multiple sources. Besides, latest fines up to 2020-08-21 were collected.
 
 The data consist of two smaller dataset:
 
-1. GDPR_Violations.tsv contains information of fines and penalties which data protection authorities in EU have imposed under EU General Data Protection Regulation (GDPR). The data contain the country and authority, the date of violation, the fine price of violation in Euros, the controller that violate the rule, ... Detailed information of variable is presented below.
+1. `GDPR_Violations.tsv` contains information of `r nrow(gdpr_vio)` fines and penalties which data protection authorities in EU have imposed under EU General Data Protection Regulation (GDPR). The dataset contains variables including the country and authority, the date of violation, the fine price of violation in Euros, the controller that violate the rule, ... Detailed information of variable is presented below.
  
-2. GDPR_text.tsv contains the actual GDPR legal document. 
+2. `GDPR_text.tsv` contains `r nrow(gdpr_text)` articles of actual GDPR legal document. 
 
 ## Data Dictionary
 
@@ -67,23 +87,15 @@ The data consist of two smaller dataset:
 |href          |character | URL to the raw text itself|
 
 
+## Research questions
 
-```{r}
-if (!(file.exists("data/gdpr_text.tsv") & file.exists("data/gdpr_violations.tsv"))){
-  source("scrapy.R")
-  rm(list = ls())
-  detach("package:rvest", unload=TRUE)
-}
-```
+The overall aim of this research is to reveal the privacy issues in cyberspace within the EU and examine whether General Data Protection Regulation fines were used as another type of "digital services tax" imposed on multinational technology corporations.
 
-```{r}
-`+.default` <- .Primitive('+')
-`+.character` <- paste0
-`+` <- function(e1, e2) UseMethod('+')
+Three secondary questions are addressed in this research:
 
-gdpr_text <- read_tsv("data/gdpr_text.tsv")
-gdpr_vio <- read_tsv("data/gdpr_violations.tsv")
-```
+1. What were the characteristics of GDPR fines across countries, time and corporations? Did certain countries target certain corporations at certain time?
+2. Which articles and regulations were more likely to be violated? And how much they commonly charged? Was there any article and regulation being abused?
+3. What were the key arguments in each article, especially articles referenced the most in GDPR fines? How did it reflect the privacy issues in the EU?
 
 
 # Analysis and findings
@@ -92,7 +104,11 @@ gdpr_vio <- read_tsv("data/gdpr_violations.tsv")
 
 # References
 
+[Privacy Affairs]
 
+[Ellis Hughes]
+
+[Tidy Tuesday]
 
 
 [Privacy Affairs]: https://www.privacyaffairs.com/gdpr-fines/
