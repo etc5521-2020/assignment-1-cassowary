@@ -46,9 +46,21 @@ if (!(file.exists("data/gdpr_text.tsv") & file.exists("data/gdpr_violations.tsv"
 
 gdpr_text <- read_tsv("data/gdpr_text.tsv")
 gdpr_vio <- read_tsv("data/gdpr_violations.tsv")
+
+gdpr_vio <- mutate(gdpr_vio, price = if_else(price <= 0, NA_real_, price)) %>%
+  mutate(date = as.Date(date, "%m/%d/%Y")) %>%
+  mutate(date = if_else(date < "2010-01-01", NA_Date_, date)) %>%
+  mutate(controller = if_else(controller == "Google Inc.", "Google", controller)) %>%
+  mutate(controller = if_else(tolower(controller) == "unknown company", "unknown", controller)) %>%
+  mutate(controller = if_else(tolower(controller) %in% c("unknown", "unknwon"), "unknown", controller)) %>%
+  mutate(controller = if_else(tolower(controller) == "tusla child and family agency", "Tusla", controller)) %>%
+  mutate(controller = if_else(tolower(controller) == "telefonica", "Telefónica SA", controller)) 
+
+
+
 ```
 
-The data is scraped from [Privacy Affairs] by [Ellis Hughes], posted on [Tidy Tuesday]. It collected data from 2018-05-12 to 2020-03-25. We adapted the scripts they used and removed duplication due to multiple sources. Besides, latest fines up to 2020-08-21 were collected.
+The data is scraped from [Privacy Affairs] by [Ellis Hughes], posted on [Tidy Tuesday]. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We collected data from 2018-05-12 to 2020-08-21. Besides, abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are obviously missing value, are set to be NA. We also further process inconsistent corporation names.
 
 The data consist of two smaller dataset:
 

@@ -1527,7 +1527,7 @@ div.tocify {
 </div>
 <div id="data-description" class="section level1">
 <h1>Data description</h1>
-<p>The data is scraped from <a href="https://www.privacyaffairs.com/gdpr-fines/">Privacy Affairs</a> by <a href="https://github.com/thebioengineer">Ellis Hughes</a>, posted on <a href="https://github.com/rfordatascience/tidytuesday">Tidy Tuesday</a>. It collected data from 2018-05-12 to 2020-03-25. We adapted the scripts they used and removed duplication due to multiple sources. Besides, latest fines up to 2020-08-21 were collected.</p>
+<p>The data is scraped from <a href="https://www.privacyaffairs.com/gdpr-fines/">Privacy Affairs</a> by <a href="https://github.com/thebioengineer">Ellis Hughes</a>, posted on <a href="https://github.com/rfordatascience/tidytuesday">Tidy Tuesday</a>. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We collected data from 2018-05-12 to 2020-08-21. Besides, abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are obviously missing value, are set to be NA. We also further process inconsistent corporation names.</p>
 <p>The data consist of two smaller dataset:</p>
 <ol style="list-style-type: decimal">
 <li><p><code>GDPR_Violations.tsv</code> contains information of 347 fines and penalties which data protection authorities in EU have imposed under EU General Data Protection Regulation (GDPR). The dataset contains variables including the country and authority, the date of violation, the fine price of violation in Euros, the controller that violate the rule, … Detailed information of variable is presented below.</p></li>
