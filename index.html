@@ -12,7 +12,7 @@
 <meta name="author" content="Weihao Li" />
 <meta name="author" content="Dang Nguyen" />
 
-<meta name="date" content="2020-08-21" />
+<meta name="date" content="2020-08-24" />
 
 <title>ETC5521 Assignment 1</title>
 
@@ -1515,19 +1515,39 @@ div.tocify {
 <h3 class="subtitle">Fines or Taxes? Exploratory Data Analysis on General Data Protection Regulation Fines</h3>
 <h4 class="author">Weihao Li</h4>
 <h4 class="author">Dang Nguyen</h4>
-<h4 class="date">2020-08-21</h4>
+<h4 class="date">2020-08-24</h4>
 
 </div>
 
 
+<style type="text/css">
+
+h1.title {
+  text-align: center;
+}
+h3.subtitle {
+  color: Darkred;
+  text-align: center;
+}
+h4.author {
+  color: black;
+  text-align: center;
+}
+h4.date {
+  color: black;
+  text-align: center;
+}
+</style>
 <p><span style="color:#006DAE;">This assignment is for ETC5521 Assignment 1 by Team cassowary comprising of Weihao Li and Dang Nguyen.</span></p>
 <div id="introduction-and-motivation" class="section level1">
 <h1>Introduction and motivation</h1>
-<p>[FILL] Give the bigger picture of the data, and inspire the reader to learn more about the problem by reading your analysis.</p>
+<p>General Data Protection Regulation (GDPR) is a regulation adopted in EU law on 14 April 2016, which aim to “protect fundamental rights and freedoms of natural persons and in particular their right to the protection of personal data” <span class="citation">(Regulation, 2016)</span>. Since its establishment, <span class="citation">Tikkinen-Piri, Rohunen, &amp; Markkula (2018)</span> stated that it would be a challenge to companies who lack of awareness of the GDPR’s practical implications. In other words, inconsistent practical and technical implementation of GDPR across companies could be anticipated. By August 2020, more than 49 companies have been fined at least 100 thousand euros. Most of these fines were issued to IT companies <span class="citation">(CoreView, 2020)</span>. The most famous and largest GDPR fine was the 50 million euros fine issued to Google.</p>
+<p>Meanwhile, <span class="citation">Lewis, Conleya, &amp; Lee-Makiyama (2020)</span> suggested that EU was in a bad position on the battle to its digital future. Besides, part of the reasons behind the GDPR establishment and the later digital services taxes imposed by major EU countries were an indication that EU was waving the flag of digital sovereignty. Thus, to against digital hegemony, it intentionally targeted non-local held IT corporations.</p>
+<p>Available data of GDPR fines from <span class="citation">Privacy Affairs (2020)</span>, provides an opportunity for us to gain insight into the privacy issues and possible abuse of articles of GDPR in EU. This dataset was originally adopted by <span class="citation">Tidy Tuesday (2020)</span>, which is a social weekly data project in R. We will provide the workflow of data collection, data cleaning and data analysis in the following sections. A potential limitation of this research is a great proportion of controller names are missing from the dataset which introduces extra difficulties of drawing accurate conclusions with respect to the company nationality.</p>
 </div>
 <div id="data-description" class="section level1">
 <h1>Data description</h1>
-<p>The data is scraped from <a href="https://www.privacyaffairs.com/gdpr-fines/">Privacy Affairs</a> by <a href="https://github.com/thebioengineer">Ellis Hughes</a>, posted on <a href="https://github.com/rfordatascience/tidytuesday">Tidy Tuesday</a>. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We collected data from 2018-05-12 to 2020-08-21. Besides, abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are obviously missing value, are set to be NA. We also further process inconsistent corporation names.</p>
+<p>The data is scraped from <span class="citation">Privacy Affairs (2020)</span> by <span class="citation">Ellis Hughes (2020)</span>, posted on <span class="citation">Tidy Tuesday (2020)</span>. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We collected data from 2018-05-12 to 2020-08-21. Besides, abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are obviously missing value, are set to be NA. We also further process inconsistent corporation names.</p>
 <p>The data consist of two smaller dataset:</p>
 <ol style="list-style-type: decimal">
 <li><p><code>GDPR_Violations.tsv</code> contains information of 347 fines and penalties which data protection authorities in EU have imposed under EU General Data Protection Regulation (GDPR). The dataset contains variables including the country and authority, the date of violation, the fine price of violation in Euros, the controller that violate the rule, … Detailed information of variable is presented below.</p></li>
@@ -1674,11 +1694,35 @@ div.tocify {
 <h1>Analysis and findings</h1>
 <p>[FILL] Should include at least one plot or numerical summary for each of your questions, that helps the reader arrive at an answer. You should also write paragraphs describing the methods, summaries and findings.</p>
 </div>
-<div id="references" class="section level1">
+<div id="acknowledgement" class="section level1">
+<h1>Acknowledgement</h1>
+<p>Following R packages are used in producing this research:</p>
+</div>
+<div id="references" class="section level1 unnumbered">
 <h1>References</h1>
-<p><a href="https://www.privacyaffairs.com/gdpr-fines/">Privacy Affairs</a></p>
-<p><a href="https://github.com/thebioengineer">Ellis Hughes</a></p>
-<p><a href="https://github.com/rfordatascience/tidytuesday">Tidy Tuesday</a></p>
+<div id="refs" class="references">
+<div id="ref-fine">
+<p>CoreView. (2020). <em>Major gdpr fine tracker</em>. <a href="https://www.coreview.com/blog/alpin-gdpr-fines-list/">https://www.coreview.com/blog/alpin-gdpr-fines-list/</a>.</p>
+</div>
+<div id="ref-Ellis-Hughes">
+<p>Ellis Hughes. (2020). <em>Thebioengineer</em>. <a href="https://github.com/thebioengineer">https://github.com/thebioengineer</a>.</p>
+</div>
+<div id="ref-eufuture">
+<p>Lewis, J. A., Conleya, H. A., &amp; Lee-Makiyama, H. (2020). <em>Has europe lost both the battle and war over its digital future?</em> <a href="https://www.csis.org/analysis/has-europe-lost-both-battle-and-war-over-its-digital-future">https://www.csis.org/analysis/has-europe-lost-both-battle-and-war-over-its-digital-future</a>.</p>
+</div>
+<div id="ref-Privacy-Affairs">
+<p>Privacy Affairs. (2020). <em>GDPR fines tracker &amp; statistics</em>. <a href="https://www.privacyaffairs.com/gdpr-fines/">https://www.privacyaffairs.com/gdpr-fines/</a>.</p>
+</div>
+<div id="ref-regulation2016regulation">
+<p>Regulation, G. D. P. (2016). Regulation (eu) 2016/679 of the european parliament and of the council of 27 april 2016 on the protection of natural persons with regard to the processing of personal data and on the free movement of such data, and repealing directive 95/46. <em>Official Journal of the European Union (OJ)</em>, <em>59</em>(1-88), 294.</p>
+</div>
+<div id="ref-Tidy-Tuesday">
+<p>Tidy Tuesday. (2020). <em>A weekly social data project in r</em>. <a href="https://github.com/rfordatascience/tidytuesday">https://github.com/rfordatascience/tidytuesday</a>.</p>
+</div>
+<div id="ref-tikkinen2018eu">
+<p>Tikkinen-Piri, C., Rohunen, A., &amp; Markkula, J. (2018). EU general data protection regulation: Changes and implications for personal data collecting companies. <em>Computer Law &amp; Security Review</em>, <em>34</em>(1), 134–153.</p>
+</div>
+</div>
 </div>
 
 

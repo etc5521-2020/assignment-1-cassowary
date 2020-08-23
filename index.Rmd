@@ -6,12 +6,35 @@ author:
   - Weihao Li
   - Dang Nguyen
 date: "`r Sys.Date()`"
+bibliography: ref.bib
 output: 
   html_document:
+    citation_package: biblatex
     toc: true
     toc_float: true
     theme: cerulean
+csl: apa-6th-edition.csl
 ---
+
+<style type="text/css">
+
+h1.title {
+  text-align: center;
+}
+h3.subtitle {
+  color: Darkred;
+  text-align: center;
+}
+h4.author {
+  color: black;
+  text-align: center;
+}
+h4.date {
+  color: black;
+  text-align: center;
+}
+</style>
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
@@ -28,7 +51,13 @@ library(lubridate)
 
 # Introduction and motivation
 
-[FILL] Give the bigger picture of the data, and inspire the reader to learn more about the problem by reading your analysis. 
+General Data Protection Regulation (GDPR) is a regulation adopted in EU law on 14 April 2016, which aim to "protect fundamental rights and freedoms of natural persons and in particular their right to the protection of personal data" [@regulation2016regulation]. Since its establishment, @tikkinen2018eu stated that it would be a challenge to companies who lack of awareness of the GDPR’s practical implications. In other words, inconsistent practical and technical implementation of GDPR across companies could be anticipated. By August 2020, more than 49 companies have been fined at least 100 thousand euros. Most of these fines were issued to IT companies [@fine]. The most famous and largest GDPR fine was the 50 million euros fine issued to Google. 
+
+Meanwhile, @eufuture suggested that EU was in a bad position on the battle to its digital future. Besides, part of the reasons behind the GDPR establishment and the later digital services taxes imposed by major EU countries were an indication that EU was waving the flag of digital sovereignty. Thus, to against digital hegemony, it intentionally targeted non-local held IT corporations.
+
+Available data of GDPR fines from @Privacy-Affairs, provides an opportunity for us to gain insight into the privacy issues and possible abuse of articles of GDPR in EU. This dataset was originally adopted by @Tidy-Tuesday, which is a social weekly data project in R. We will provide the workflow of data collection, data cleaning and data analysis in the following sections. A potential limitation of this research is a great proportion of controller names are missing from the dataset which introduces extra difficulties of drawing accurate conclusions with respect to the company nationality.
+
+ 
 
 # Data description
 
@@ -73,7 +102,7 @@ gdpr_vio <- mutate(gdpr_vio, price = if_else(price <= 0, NA_real_, price)) %>%
 
 ```
 
-The data is scraped from [Privacy Affairs] by [Ellis Hughes], posted on [Tidy Tuesday]. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We collected data from 2018-05-12 to 2020-08-21. Besides, abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are obviously missing value, are set to be NA. We also further process inconsistent corporation names.
+The data is scraped from @Privacy-Affairs by @Ellis-Hughes, posted on @Tidy-Tuesday. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We collected data from 2018-05-12 to 2020-08-21. Besides, abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are obviously missing value, are set to be NA. We also further process inconsistent corporation names.
 
 The data consist of two smaller dataset:
 
@@ -127,18 +156,11 @@ Three secondary questions are addressed in this research:
 
 [FILL] Should include at least one plot or numerical summary for each of your questions, that helps the reader arrive at an answer. You should also write paragraphs describing the methods, summaries and findings. 
 
+# Acknowledgement
+
+Following R packages are used in producing this research:
+
+
+
 # References
-
-[Privacy Affairs]
-
-[Ellis Hughes]
-
-[Tidy Tuesday]
-
-
-[Privacy Affairs]: https://www.privacyaffairs.com/gdpr-fines/
-
-[Ellis Hughes]: https://github.com/thebioengineer
-
-[Tidy Tuesday]: https://github.com/rfordatascience/tidytuesday
 
