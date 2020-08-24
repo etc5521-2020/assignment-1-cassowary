@@ -13,6 +13,7 @@ output:
     toc: true
     toc_float: true
     theme: cerulean
+    number_sections: true
 csl: apa-6th-edition.csl
 ---
 
@@ -70,9 +71,6 @@ if (!(file.exists("data/gdpr_text.tsv") & file.exists("data/gdpr_violations.tsv"
 ```
 
 ```{r}
-`+.default` <- .Primitive('+')
-`+.character` <- paste0
-`+` <- function(e1, e2) UseMethod('+')
 
 gdpr_text <- read_tsv("data/gdpr_text.tsv")
 gdpr_vio <- read_tsv("data/gdpr_violations.tsv")
@@ -94,12 +92,6 @@ gdpr_vio <- mutate(gdpr_vio, price = if_else(price <= 0, NA_real_, price)) %>%
   mutate(controller = if_else(controller == "bank", "Bank", controller))
   
   
-
-  
-  
-
-
-
 ```
 
 The data is scraped from @Privacy-Affairs by @Ellis-Hughes, posted on @Tidy-Tuesday. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We collected data from 2018-05-12 to 2020-08-21. Besides, abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are obviously missing value, are set to be NA. We also further process inconsistent corporation names.
@@ -153,6 +145,57 @@ Three secondary questions are addressed in this research:
 
 
 # Analysis and findings
+
+## Characteristics of GDPR fines across countries, time and corporations
+
+```{r}
+gdpr_vio %>%
+  filter(!is.na(date)) %>%
+  ggplot() +
+  geom_boxplot(aes(factor(month(date)), log(price))) +
+  facet_wrap(~year(date))
+```
+```{r}
+gdpr_vio %>%
+  filter(!is.na(date)) %>%
+  ggplot() +
+  geom_bar(aes(factor(month(date)))) +
+  facet_wrap(~year(date))
+```
+
+```{r}
+gdpr_vio %>%
+  filter(!is.na(price)) %>%
+  group_by(name) %>%
+  summarise(md = median(price, na.rm = TRUE)) %>%
+  right_join(filter(gdpr_vio, !is.na(price))) %>%
+  ggplot() +
+  geom_boxplot(aes(price, fct_reorder(name, md, .desc = T))) +
+  scale_x_log10()
+```
+
+```{r}
+gdpr_vio %>%
+  ggplot() +
+  geom_bar(aes(fct_infreq(name))) +
+  coord_flip()
+
+```
+
+```{r}
+gdpr_vio %>%
+  filter(!is.na(date)) %>%
+  group_by(controller) %>%
+  summarise(total_price = sum(price, na.rm = TRUE), 
+            count = n(), 
+            countries = paste(unique(name), collapse = ", "),
+            date = paste(unique(paste0(year(date), "-", month(date))), collapse = ", ")) %>%
+  filter(!controller %in% c("Unknown", "Company", "Private individual", "Bank", "Telecom company", "Restaurant", "Hospital")) %>%
+  arrange(desc(total_price)) %>%
+  head(20) %>%
+  knitr::kable()
+```
+
 
 [FILL] Should include at least one plot or numerical summary for each of your questions, that helps the reader arrive at an answer. You should also write paragraphs describing the methods, summaries and findings. 
 
