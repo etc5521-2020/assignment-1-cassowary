@@ -150,14 +150,15 @@ Three secondary questions are addressed in this research:
 
 ## Characteristics of GDPR fines across countries, time and corporations
 
-```{r}
+```{r plot 1}
 gdpr_vio %>%
   filter(!is.na(date)) %>%
   ggplot() +
   geom_boxplot(aes(factor(month(date)), log(price))) +
   facet_wrap(~year(date))
 ```
-```{r plot1}
+
+```{r plot2}
 gdpr_vio %>%
   filter(!is.na(date)) %>%
   ggplot() +
@@ -171,7 +172,7 @@ gdpr_vio %>%
 
 ```
 
-```{r plot2}
+```{r plot3}
 gdpr_vio %>%
   filter(!is.na(price)) %>%
   group_by(name) %>%
@@ -182,10 +183,17 @@ gdpr_vio %>%
   scale_x_log10()
 ```
 
-```{r}
+```{r plot4-Thanh}
+gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
+  ggplot(aes(x = count, y = fct_reorder(name, count))) +
+  geom_bar(stat = "identity")
+
+```
+
+```{r plot4-Weihao}
 gdpr_vio %>%
   ggplot() +
-  geom_bar(aes(fct_infreq(name))) +
+  geom_bar(aes(fct_infreq(name, ordered = FALSE))) +
   coord_flip()
 
 ```
