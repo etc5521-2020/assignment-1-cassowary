@@ -186,7 +186,11 @@ gdpr_vio %>%
 ```{r plot4-Thanh}
 gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
   ggplot(aes(x = count, y = fct_reorder(name, count))) +
-  geom_bar(stat = "identity")
+  geom_bar(stat = "identity")+
+  xlab("Number of Violations")+
+  ylab("Country")+
+  labs(title = "Number of GDPR Violations by country")+
+  theme(plot.title = element_text(hjust = 0.5))
 
 ```
 
@@ -198,7 +202,7 @@ gdpr_vio %>%
 
 ```
 
-```{r}
+```{r table1}
 gdpr_vio %>%
   filter(!is.na(date)) %>%
   group_by(controller) %>%
