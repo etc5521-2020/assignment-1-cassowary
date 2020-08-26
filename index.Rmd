@@ -89,7 +89,8 @@ gdpr_vio <- mutate(gdpr_vio, price = if_else(price <= 0, NA_real_, price)) %>%
   mutate(controller = if_else(controller %in% c("Private person", "Private person"), "Private individual", controller)) %>%
   mutate(controller = if_else(controller %in% c("A bank", "bank", "Bank (unknown)"), "Bank", controller)) %>%
   mutate(controller = if_else(controller == "A mayor", "Mayor", controller)) %>%
-  mutate(controller = if_else(controller == "bank", "Bank", controller))
+  mutate(controller = if_else(controller == "bank", "Bank", controller)) %>%
+  mutate(article_violated = if_else(article_violated == "Failure to implement sufficient measures to ensure information security", "Art.32 GDPR", article_violated))
   
   
 ```
@@ -218,6 +219,43 @@ gdpr_vio %>%
 
 
 [FILL] Should include at least one plot or numerical summary for each of your questions, that helps the reader arrive at an answer. You should also write paragraphs describing the methods, summaries and findings. 
+
+## Analysis of violated article
+
+```{r clean article}
+
+# I used str_split() as suggested by Mitchell O’Hara-Wild
+# I later found that separate rows seems easier
+# I stole from stackoverflow anyway: 
+# https://stackoverflow.com/questions/30283873/how-to-split-one-row-into-multiple-rows-in-r
+
+gdpr_vio_art <- as.tibble(gdpr_vio$article_violated)
+
+gdpr_vio_art_list <- gdpr_vio_art %>%  separate_rows(value, sep = "\\|")
+# gdpr_vio_art_list <- tibble(value = unlist(strsplit(gdpr_vio$article_violated, "\\|")))
+
+```
+
+```{r art-plot}
+# Prepare clean data to make plot.
+# I noticed that what I need is the first 7 characters.
+# Then I trim the character out, leaving only digit.
+
+gdpr_vio_art_list <- gdpr_vio_art_list %>% 
+  mutate(article = (substr(value, start = 1, stop = 7))) %>%
+      mutate(article_number = as.numeric(gsub("\\D+"," ", article)), # Trim character out
+             article_name = paste("Article.", article_number)) %>%   # Add article text, for beauty
+  na.omit() %>%
+  group_by(article_number) %>%
+  mutate(count = n()) # For reorder of group
+
+# gdpr_vio_art_plot 
+gdpr_vio_art_list %>%
+  ggplot()+
+  geom_bar(aes(y = fct_reorder(article_name, count))) +
+  xlab("Article")
+```
+
 
 # Acknowledgement
 
