@@ -17,6 +17,8 @@ output:
 csl: apa-6th-edition.csl
 ---
 
+<!-- CSS style for title page -->
+
 <style type="text/css">
 
 h1.title {
@@ -38,14 +40,18 @@ h4.date {
 
 
 ```{r setup, include=FALSE}
+#Sset knitr option and system language for R kernel
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 Sys.setlocale("LC_ALL","English")
 ```
 
 ```{r libra}
+# Load in packages
 library(tidyverse)
 library(lubridate)
 library(kableExtra)
+library(tidytext)
+library(wordcloud2)
 ```
 
 [This assignment is for ETC5521 Assignment 1 by Team `r rmarkdown::metadata$team` comprising of `r knitr::combine_words(rmarkdown::metadata$author)`.]{style="color:#006DAE;"}
@@ -64,6 +70,7 @@ Available data of GDPR fines from @Privacy-Affairs, provides an opportunity for 
 # Data description
 
 ```{r}
+# Source script and clean environment after running the script
 if (!(file.exists("data/gdpr_text.tsv") & file.exists("data/gdpr_violations.tsv"))){
   source("scrapy.R")
   rm(list = ls())
@@ -72,10 +79,11 @@ if (!(file.exists("data/gdpr_text.tsv") & file.exists("data/gdpr_violations.tsv"
 ```
 
 ```{r data cleaning}
-
+# Load in data
 gdpr_text <- read_tsv("data/gdpr_text.tsv")
 gdpr_vio <- read_tsv("data/gdpr_violations.tsv")
 
+# Normal data cleaning
 gdpr_vio <- mutate(gdpr_vio, price = if_else(price <= 0, NA_real_, price)) %>%
   mutate(date = as.Date(date, "%m/%d/%Y")) %>%
   mutate(date = if_else(date < "2010-01-01", NA_Date_, date)) %>%
@@ -153,6 +161,7 @@ Three secondary questions are addressed in this research:
 ## Characteristics of GDPR fines across countries, time and corporations
 
 ```{r plot 1}
+# Draws multiple boxplots on different layers to display different colors
 gdpr_vio %>%
   filter(!is.na(date)) %>%
   ggplot() +
@@ -171,21 +180,23 @@ gdpr_vio %>%
 ```
 
 ```{r plot2}
+# Hightlight some bars
 gdpr_vio %>%
   filter(!is.na(date)) %>%
   ggplot() +
   geom_bar(aes(factor(month(date)), fill = date >="2019-10-01" & date <="2020-03-31" | month(date) == 6 & year(date) == 2020)) +
   facet_wrap(~year(date)) +
-  ylab("Number of Violations")+
-  xlab("Month")+
-  scale_fill_manual(values = c("navyblue", "#D7261E"))+
-  labs(title = "Number of GDPR Violations, 2018-2020")+
+  ylab("Number of Violations") +
+  xlab("Month") +
+  scale_fill_manual(values = c("navyblue", "#D7261E")) +
+  labs(title = "Number of GDPR Violations, 2018-2020") +
   theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
   
 
 ```
 
 ```{r plot3}
+# Sort boxplots by median price
 gdpr_vio %>%
   filter(!is.na(price)) %>%
   group_by(name) %>%
@@ -206,7 +217,7 @@ gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
   ggplot(aes(x = count, y = fct_reorder(name, count))) +
   geom_bar(stat = "identity", aes(fill = count>50)) +
   xlab("Number of Violations")+
-  ylab("Country")+
+  ylab("Country") +
   labs(title = "Number of GDPR Violations by country") +
   scale_fill_manual(values = c("navyblue", "#D7261E")) + 
   theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
@@ -215,6 +226,7 @@ gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
 
 
 ```{r table1}
+# Detail table
 gdpr_vio %>%
   filter(!is.na(date)) %>%
   arrange(date) %>%
@@ -238,6 +250,7 @@ gdpr_vio %>%
 
 
 ```{r table2}
+# Vodafone only
 gdpr_vio %>%
   filter(!is.na(date)) %>%
   filter(grepl("Vodafone", controller)) %>%
@@ -260,20 +273,33 @@ gdpr_vio %>%
 ## Analysis of violated article
 
 ```{r art-plot}
+# Init a list
 art_list <- list()
 
+# Iterating all articles
 for (i in 1:100){
+  
+  # Define a pattern
   txt <- paste0("art. ", i, " ")
+  
+  # Match patterns with vector of lower case string
   art_list[[i]] <- grepl(txt, tolower(gdpr_vio$article_violated), fixed = TRUE)
+  
+  # Define another pattern
   txt <- paste0("art. ", i, "(")
+  
+  # Match again and add them together (Note: TRUE = 1, FALSE = 0)
   art_list[[i]] <- art_list[[i]] + grepl(txt, tolower(gdpr_vio$article_violated), fixed = TRUE)
   txt <- paste0("art.", i, " ")
   art_list[[i]] <- art_list[[i]] + grepl(txt, tolower(gdpr_vio$article_violated), fixed = TRUE)
   txt <- paste0("art ", i, " ")
   art_list[[i]] <- art_list[[i]] + grepl(txt, tolower(gdpr_vio$article_violated), fixed = TRUE)
+  
+  # As long as it matches with any pattern above, mark it as TRUE
   art_list[[i]] <- art_list[[i]] > 0
 }
 
+# Add up all logical values for each article (lapply), unlist them as a vector
 data.frame(id = paste0("Art. ", 1:100), count = unlist(lapply(art_list, sum))) %>%
   filter(count > 0) %>%
   ggplot() +
@@ -285,15 +311,24 @@ data.frame(id = paste0("Art. ", 1:100), count = unlist(lapply(art_list, sum))) %
   theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
   
 ```
+
+
 ```{r}
+# Init a list
 price_list <- NULL
+
 for (i in 1:100){
+  # for each article, retrieve all prices from the GDPR fine dataset if they violate that article
   if (is.null(price_list)){
+    # Init the data frame
     price_list <- data.frame(id = rep(i, length(gdpr_vio$price[art_list[[i]]])), price = gdpr_vio$price[art_list[[i]]])
   } else {
+    # Bind prices together
     price_list <- bind_rows(price_list, data.frame(id = rep(i, length(gdpr_vio$price[art_list[[i]]])), price = gdpr_vio$price[art_list[[i]]]))
   }
 }
+
+# Sort boxplots by median price
 
 price_list %>%
   filter(!is.na(price)) %>%
@@ -311,6 +346,55 @@ price_list %>%
 ```
 
 
+## Text mining GDPR articles
+
+```{r}
+# Create word frequency and anti join useless words
+word_list <- gdpr_text %>%
+  select(article, text = gdpr_text) %>%
+  unnest_tokens(word, text) %>%
+  group_by(article, word) %>%
+  summarise(count = n()) %>%
+  anti_join(stop_words, by = 'word') %>%
+  filter(!grepl("\\d", word)) %>%
+  arrange(article, desc(count))
+```
+
+### Overview of GDPR articles
+
+```{r overall}
+
+# Drop article attribute
+temp <- data.frame(word = word_list$word, count = word_list$count)
+
+# Use the first 1200 words to build word cloud
+temp <- temp %>%
+  filter(!grepl("\\d", word)) %>%
+  group_by(word) %>%
+  summarise(count = n()) %>%
+  ungroup() %>%
+  arrange(desc(count)) %>%
+  head(1200)
+
+wordcloud2(temp)
+
+```
+
+## Words in article 5, 6 and 32 respectively
+
+```{r}
+# List the top 5 words
+word_list %>%
+  filter(article %in% c(5,6,32)) %>%
+  filter(!grepl("\\d", word)) %>%
+  arrange(article, desc(count)) %>%
+  group_by(article) %>%
+  summarise(word = word[1:5], count = count[1:5]) %>%
+  knitr::kable(caption = "Top 5 most common words for article 5, 6 and 32 respectively") %>%
+  row_spec(c(1:5,11:15), color = "black", background = "lightgrey") %>%
+  kable_styling(full_width = T, "hover")
+  
+```
 
 
 # Acknowledgement
