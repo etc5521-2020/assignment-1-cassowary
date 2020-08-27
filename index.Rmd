@@ -253,7 +253,9 @@ gdpr_vio_art_list <- gdpr_vio_art_list %>%
 gdpr_vio_art_list %>%
   ggplot()+
   geom_bar(aes(y = fct_reorder(article_name, count))) +
-  xlab("Article")
+  xlab("Number of Violations")+
+  ylab("Article name")+
+  labs(title = "Number of GDPR violations by article")
 ```
 
 
