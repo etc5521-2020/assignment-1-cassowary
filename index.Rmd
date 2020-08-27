@@ -45,6 +45,7 @@ Sys.setlocale("LC_ALL","English")
 ```{r libra}
 library(tidyverse)
 library(lubridate)
+library(kableExtra)
 ```
 
 [This assignment is for ETC5521 Assignment 1 by Team `r rmarkdown::metadata$team` comprising of `r knitr::combine_words(rmarkdown::metadata$author)`.]{style="color:#006DAE;"}
@@ -97,7 +98,7 @@ gdpr_vio <- mutate(gdpr_vio, price = if_else(price <= 0, NA_real_, price)) %>%
 
 
 The data is scraped from @Privacy-Affairs by @Ellis-Hughes, posted on @Tidy-Tuesday. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We collected data from 2018-05-12 to 2020-08-21. Besides, abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are obviously missing value, are set to be NA. All records with missing date are set to NA.
-We also further process inconsistenty in corporation names. There are unnamed organizations that were fined by GDPR. In this report, all unnamed organizations are  labeled as "Unknown". 
+We also further process inconsistency in corporation names. There are unnamed organizations that were fined by GDPR. In this report, all unnamed organizations are labelled as "Unknown". 
 
 The data consist of two smaller dataset:
 
@@ -155,21 +156,32 @@ Three secondary questions are addressed in this research:
 gdpr_vio %>%
   filter(!is.na(date)) %>%
   ggplot() +
-  geom_boxplot(aes(factor(month(date)), log(price))) +
-  facet_wrap(~year(date))
+  geom_boxplot(aes(factor(month(date)), price), outlier.color = "#D7261E") +
+  geom_boxplot(data = filter(gdpr_vio, date<"2019-09-01"|date>"2020-04-01"),
+               aes(factor(month(date)), price), outlier.color = "black") +
+  geom_point(data = filter(filter(gdpr_vio, month(date) == 3, year(date) == 2020), 
+                           price == min(price, na.rm = T)),
+             aes(factor(month(date)), price)) +
+  facet_wrap(~year(date)) +
+  xlab("Month") + 
+  ylab("Price (log10 scale)") +
+  scale_y_log10()  +
+  ggtitle("Boxplot of GDPR fines across time, 2018-2020")  +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 ```{r plot2}
 gdpr_vio %>%
   filter(!is.na(date)) %>%
   ggplot() +
-  geom_bar(aes(factor(month(date))),fill = "blue") +
+  geom_bar(aes(factor(month(date)), fill = date >="2019-10-01" & date <="2020-03-31" | month(date) == 6 & year(date) == 2020)) +
   facet_wrap(~year(date)) +
   ylab("Number of Violations")+
   xlab("Month")+
-  scale_fill_brewer(palette = "dark2")+
+  scale_fill_manual(values = c("navyblue", "#D7261E"))+
   labs(title = "Number of GDPR Violations, 2018-2020")+
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+  
 
 ```
 
@@ -181,82 +193,124 @@ gdpr_vio %>%
   right_join(filter(gdpr_vio, !is.na(price))) %>%
   ggplot() +
   geom_boxplot(aes(price, fct_reorder(name, md, .desc = T))) +
-  scale_x_log10()
+  scale_x_log10() +
+  ylab("Country") + 
+  xlab("Price (log10 scale)") +
+  ggtitle("Boxplot of GDPR fines by country") +
+  theme(plot.title = element_text(hjust = 0.5))
+  
 ```
 
 ```{r plot4-Thanh}
 gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
   ggplot(aes(x = count, y = fct_reorder(name, count))) +
-  geom_bar(stat = "identity")+
+  geom_bar(stat = "identity", aes(fill = count>50)) +
   xlab("Number of Violations")+
   ylab("Country")+
-  labs(title = "Number of GDPR Violations by country")+
-  theme(plot.title = element_text(hjust = 0.5))
+  labs(title = "Number of GDPR Violations by country") +
+  scale_fill_manual(values = c("navyblue", "#D7261E")) + 
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
 
 ```
 
-```{r plot4-Weihao}
-gdpr_vio %>%
-  ggplot() +
-  geom_bar(aes(fct_infreq(name, ordered = FALSE))) +
-  coord_flip()
-
-```
 
 ```{r table1}
 gdpr_vio %>%
   filter(!is.na(date)) %>%
+  arrange(date) %>%
   group_by(controller) %>%
   summarise(total_price = sum(price, na.rm = TRUE), 
             count = n(), 
             countries = paste(unique(name), collapse = ", "),
             date = paste(unique(paste0(year(date), "-", month(date))), collapse = ", ")) %>%
   filter(!controller %in% c("Unknown", "Company", "Private individual", "Bank", "Telecom company", "Restaurant", "Hospital")) %>%
-  arrange(desc(total_price)) %>%
-  head(20) %>%
-  knitr::kable()
+  arrange(desc(total_price))%>%
+  head(10) %>%
+  knitr::kable(caption = "Largest cumulative GDPR fines by corporation: Companies with background in red are owned by corporations or individuals outside EU.",
+               col.names = c("Controller", "Cumulative_price", "Count", "Countries", "Date")) %>%
+  row_spec(c(1,4,10), bold = T, color = "white", background = "#D7261E") %>%
+  kable_styling(full_width = F, "hover")
+  
 ```
+
+
+
+
+
+```{r table2}
+gdpr_vio %>%
+  filter(!is.na(date)) %>%
+  filter(grepl("Vodafone", controller)) %>%
+  select(date, name, controller, price) %>%
+  group_by(controller, country = name) %>%
+  summarise(total_price = sum(price, na.rm = T),
+            count = n(),
+            date = paste(unique(paste0(year(date), "-", month(date))), collapse = ", ")
+            ) %>%
+  knitr::kable(caption = "GDPR fines issued to Vodafone", 
+               col.names = c("Controller", "Countries", "Cumulative_price", "Count", "Date")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+
 
 
 [FILL] Should include at least one plot or numerical summary for each of your questions, that helps the reader arrive at an answer. You should also write paragraphs describing the methods, summaries and findings. 
 
 ## Analysis of violated article
 
-```{r clean article}
-
-# I used str_split() as suggested by Mitchell O’Hara-Wild
-# I later found that separate rows seems easier
-# I stole from stackoverflow anyway: 
-# https://stackoverflow.com/questions/30283873/how-to-split-one-row-into-multiple-rows-in-r
-
-gdpr_vio_art <- as.tibble(gdpr_vio$article_violated)
-
-gdpr_vio_art_list <- gdpr_vio_art %>%  separate_rows(value, sep = "\\|")
-# gdpr_vio_art_list <- tibble(value = unlist(strsplit(gdpr_vio$article_violated, "\\|")))
-
-```
-
 ```{r art-plot}
-# Prepare clean data to make plot.
-# I noticed that what I need is the first 7 characters.
-# Then I trim the character out, leaving only digit.
+art_list <- list()
 
-gdpr_vio_art_list <- gdpr_vio_art_list %>% 
-  mutate(article = (substr(value, start = 1, stop = 7))) %>%
-      mutate(article_number = as.numeric(gsub("\\D+"," ", article)), # Trim character out
-             article_name = paste("Article.", article_number)) %>%   # Add article text, for beauty
-  na.omit() %>%
-  group_by(article_number) %>%
-  mutate(count = n()) # For reorder of group
+for (i in 1:100){
+  txt <- paste0("art. ", i, " ")
+  art_list[[i]] <- grepl(txt, tolower(gdpr_vio$article_violated), fixed = TRUE)
+  txt <- paste0("art. ", i, "(")
+  art_list[[i]] <- art_list[[i]] + grepl(txt, tolower(gdpr_vio$article_violated), fixed = TRUE)
+  txt <- paste0("art.", i, " ")
+  art_list[[i]] <- art_list[[i]] + grepl(txt, tolower(gdpr_vio$article_violated), fixed = TRUE)
+  txt <- paste0("art ", i, " ")
+  art_list[[i]] <- art_list[[i]] + grepl(txt, tolower(gdpr_vio$article_violated), fixed = TRUE)
+  art_list[[i]] <- art_list[[i]] > 0
+}
 
-# gdpr_vio_art_plot 
-gdpr_vio_art_list %>%
-  ggplot()+
-  geom_bar(aes(y = fct_reorder(article_name, count))) +
-  xlab("Number of Violations")+
-  ylab("Article name")+
-  labs(title = "Number of GDPR violations by article")
+data.frame(id = paste0("Art. ", 1:100), count = unlist(lapply(art_list, sum))) %>%
+  filter(count > 0) %>%
+  ggplot() +
+  geom_bar(aes(y = fct_reorder(id, count), x = count, fill = count > 50), stat = "identity") +
+  xlab("Number of violation") +
+  ylab("Article number") +
+  labs(title = "Number of GDPR violations by article") + 
+  scale_fill_manual(values = c("navyblue", "#D7261E")) +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+  
 ```
+```{r}
+price_list <- NULL
+for (i in 1:100){
+  if (is.null(price_list)){
+    price_list <- data.frame(id = rep(i, length(gdpr_vio$price[art_list[[i]]])), price = gdpr_vio$price[art_list[[i]]])
+  } else {
+    price_list <- bind_rows(price_list, data.frame(id = rep(i, length(gdpr_vio$price[art_list[[i]]])), price = gdpr_vio$price[art_list[[i]]]))
+  }
+}
+
+price_list %>%
+  filter(!is.na(price)) %>%
+  group_by(id) %>%
+  summarise(price = price, md = median(price)) %>%
+  ungroup() %>%
+  ggplot() +
+  geom_boxplot(aes(price, y = fct_reorder(paste0("Art. ", id), md, .desc = T), col = id %in% c(5,6,32))) +
+  scale_color_manual(values = c("grey35", "#D7261E")) +
+  scale_x_log10() +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none") +
+  xlab("Price (log10 scale)") +
+  ylab("Article number") +
+  ggtitle("GDPR fines by article")
+```
+
+
 
 
 # Acknowledgement
