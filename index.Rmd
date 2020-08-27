@@ -360,7 +360,7 @@ word_list <- gdpr_text %>%
   arrange(article, desc(count))
 ```
 
-### Overview of GDPR articles
+### Overview of words in GDPR articles
 
 ```{r overall}
 
@@ -376,11 +376,11 @@ temp <- temp %>%
   arrange(desc(count)) %>%
   head(1200)
 
-wordcloud2(temp)
+wordcloud2(temp, size = 0.3)
 
 ```
 
-## Words in article 5, 6 and 32 respectively
+## Words in Article 5, 6 and 32 respectively
 
 ```{r}
 # List the top 5 words
@@ -395,6 +395,45 @@ word_list %>%
   kable_styling(full_width = T, "hover")
   
 ```
+
+
+## Overview of trigrams in GDPR articles
+
+```{r}
+# Extract trigrams
+
+word_list <- gdpr_text %>%
+  select(article, text = gdpr_text) %>%
+  unnest_tokens(trigram, text, token = 'ngrams', n = 3) %>%
+  group_by(article, trigram) %>%
+  summarise(count = n()) %>%
+  separate(trigram, c('word1', 'word2', 'word3'), sep =' ') %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word) %>%
+  filter(!word3 %in% stop_words$word) %>%
+  unite(trigram, word1, word2, word3, sep =' ') %>%
+  filter(!grepl("\\d", trigram)) %>%
+  arrange(article, desc(count))
+```
+
+
+```{r}
+# Drop article attribute
+temp <- data.frame(word = word_list$trigram, count = word_list$count)
+
+# Use the trigrams to build word cloud
+temp <- temp %>%
+  filter(!grepl("\\d", word)) %>%
+  group_by(word) %>%
+  summarise(count = n()) %>%
+  ungroup() %>%
+  arrange(desc(count))
+
+wordcloud2(temp, size = 0.2)
+```
+
+
+
 
 
 # Acknowledgement
