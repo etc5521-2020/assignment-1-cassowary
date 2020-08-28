@@ -190,8 +190,7 @@ gdpr_vio %>%
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-\@ref (fig:plot2) shows the number of GDPR violations that got fined from 2018 to 2020. Time periods when high number of GDPR fines were recorded are painted in red.   
-The last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations. 
+\@ref (fig:plot2) shows the number of GDPR violations that got fined from 2018 to 2020. Time periods when high number of GDPR fines were recorded are painted in red in order to highlight possible trend. The last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations. 
 ```{r plot2}
 # Hightlight some bars
 # T: We can filter and highlight the bars that are larger than a set value. 
@@ -232,16 +231,16 @@ gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
   geom_bar(stat = "identity", aes(fill = count>50)) +
   xlab("Number of Violations")+
   ylab("Country") +
-  labs(title = "Number of GDPR Violations by country") +
+  labs(title = "Number of GDPR Violations by country, 2018-2020") +
   scale_fill_manual(values = c("navyblue", "#D7261E")) + 
   theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
 
 ```
-
+Figure \@ref(fig:plot4) demonstrates the number of fined GDPR violations by country from 2018 to 2020. While all country in the EU has less than 35 cases of GDPR violations except for Spain, which has nearly 100 cases, triple than that of Hungary, the second highest. It is an interesting trend that can be explored by further research. 
 
 ```{r table1}
 # Detail table
-gdpr_vio %>%
+table1 <- gdpr_vio %>%
   filter(!is.na(date)) %>%
   arrange(date) %>%
   group_by(controller) %>%
@@ -251,14 +250,15 @@ gdpr_vio %>%
             date = paste(unique(paste0(year(date), "-", month(date))), collapse = ", ")) %>%
   filter(!controller %in% c("Unknown", "Company", "Private individual", "Bank", "Telecom company", "Restaurant", "Hospital")) %>%
   arrange(desc(total_price))%>%
-  head(10) %>%
-  knitr::kable(caption = "Largest cumulative GDPR fines by corporation: Companies with background in red are owned by corporations or individuals outside EU.",
-               col.names = c("Controller", "Cumulative_price", "Count", "Countries", "Date")) %>%
+  head(10)
+table1 %>%  knitr::kable(caption = "Largest cumulative GDPR fines by corporation",
+               col.names = c("Controller", "Cumulative price", "Count", "Countries", "Date")) %>%
   row_spec(c(1,4,10), bold = T, color = "white", background = "#D7261E") %>%
-  kable_styling(full_width = F, "hover")
-  
-```
+  kable_styling(full_width = F, "hover") %>%
+  footnote(general = "Companies with background in red are owned by corporations or individuals outside EU")
 
+```
+\@ref(tab:table1) shows us the information about the ten corporations that have accumulated the most fines since the introduction of GDPR. `r table1$controller[1]` was fined `r table1$count[1]` times and had to pay a fortune of `r table1$total_price[1]/1000000` million euros. It is worth notice that `r arrange(table1,desc(count))$controller[1]` was fined `r arrange(table1,desc(count))$count[1]` times, the highest number of financial penalties received. A closer look at the Britist telecommunication company is provided in \@ref(tab:table2). We discovered another fact: Not only did Vodafone España	receive a very high number of fines, its branch, Vodafone ONO also receive 2 fines. Together, Vodafone violated the GDPR 21 times in Spain, which is a fifth of the country's total number of violations.
 
 
 
@@ -279,10 +279,6 @@ gdpr_vio %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
-
-
-
-[FILL] Should include at least one plot or numerical summary for each of your questions, that helps the reader arrive at an answer. You should also write paragraphs describing the methods, summaries and findings. 
 
 ## Analysis of violated article
 
@@ -447,6 +443,7 @@ wordcloud2(temp, size = 0.2)
 ```
 
 
+[FILL] Should include at least one plot or numerical summary for each of your questions, that helps the reader arrive at an answer. You should also write paragraphs describing the methods, summaries and findings. 
 
 
 
