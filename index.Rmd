@@ -115,7 +115,7 @@ The data is scraped from @Privacy-Affairs by @Ellis-Hughes, posted on @Tidy-Tues
 
 Abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are obviously missing value, are set to be NA. All records with missing date are set to NA. We also further process inconsistency in corporation names. There are unnamed organizations that were fined by GDPR. In this report, all unnamed organizations are labelled as "Unknown". 
 
-The dataset has some limitations that can be observed from the origilnal source (@Privacy-Affairs):  
+The dataset has some limitations that can be observed from the origilnal source @Privacy-Affairs:  
 - Not all cases are presented in the dataset. The data only includes finalised cases and cases that are made public. This can lead to bias in further analysis.
 - The controller of data, in many cases, are vaguely described, or not disclosed. This trend can lead to misunderstand and bias in further analysis.
 
@@ -138,7 +138,7 @@ The data consist of two smaller dataset:
 |authority        |character | Authority that enacted the violation |
 |date             |character | Date of violation |
 |controller       |character | Controller of data - the violator |
-|article_violated |character | Specific GDPR Article violated (see the `gdpr_text.tsv` data for specifics) |
+|article_violated |character |Specific GDPR Article violated (see the `gdpr_text.tsv` data for specifics) |
 |type             |character | Type of violation |
 |source           |character | Original source (URL) of fine data |
 |summary          |character | Summary of violation |
@@ -170,7 +170,7 @@ Three secondary questions are addressed in this research:
 
 # Analysis and findings
 
-## Characteristics of GDPR fines across countries, time and corporations
+## Characteristics of GDPR violations across countries, time and corporations
 
 ```{r plot 1}
 # Draws multiple boxplots on different layers to display different colors
@@ -191,8 +191,10 @@ gdpr_vio %>%
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-\@ref (fig:plot2) shows the number of GDPR violations that got fined from 2018 to 2020. Time periods when high number of GDPR fines were recorded are painted in red in order to highlight possible trend. The last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations. 
-```{r plot2, fig.cap="Number of GDPR violations by year, 2018-2020"}
+### Monthly number of GDPR violations 
+
+Figure \@ref(fig:plot2) shows the number of GDPR violations that got fined from 2018 to 2020. Time periods when high number of GDPR fines were recorded are painted in red in order to highlight possible trend. The last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations, with a peak of 35 controllers fined in March 2020.
+```{r plot2, fig.cap="Monthly number of GDPR violations by year, 2018-2020"}
 # Hightlight some bars
 # T: We can filter and highlight the bars that are larger than a set value. 
 gdpr_vio %>%
@@ -209,6 +211,8 @@ gdpr_vio %>%
 
 ```
 
+
+### Characteristics of GDPR violations across countries
 ```{r plot3}
 # Sort boxplots by median price
 gdpr_vio %>%
@@ -237,7 +241,14 @@ gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
   theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
 
 ```
-Figure \@ref(fig:plot4) demonstrates the number of fined GDPR violations by country from 2018 to 2020. While all country in the EU has less than 35 cases of GDPR violations except for Spain, which has nearly 100 cases, triple than that of Hungary, the second highest. It is an interesting trend that should be explored by further research. 
+Figure \@ref(fig:plot4) demonstrates the number of fined GDPR violations by country from 2018 to 2020. While all country in the EU has less than 35 cases of GDPR violations except for Spain, which has nearly 100 cases, triple than that of Hungary, the second highest. This is an noticable trend that require further research. 
+
+### Characteristics of GDPR violations across corporations
+
+
+Table \@ref(tab:table1) shows us the information about the ten corporations that have accumulated the most fines since the introduction of GDPR. `r table1$controller[1]` was fined `r table1$count[1]` times and had to pay a fortune of `r table1$total_price[1]/1000000` million euros. It is worth notice that `r arrange(table1,desc(count))$controller[1]` was fined `r arrange(table1,desc(count))$count[1]` times, the highest number of financial penalties received. A closer look at the Britist telecommunication company is provided in table \@ref(tab:table2). We discovered another fact: Not only did Vodafone España	receive a very high number of fines, its branch, Vodafone ONO also receive 2 fines. Together, Vodafone violated the GDPR 21 times in Spain, which is a fifth of the country's total number of violations.
+
+Overall, the last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations. Since the introduction of GDPR, most country has less than 30 violations, except for Spain. The country recorded about 100 GDPR financial penalties, 21 of which from Vodafone. It seems that Vodafone is targeted by the Spain authority.
 
 ```{r table1}
 # Detail table
@@ -259,9 +270,6 @@ table1 %>%  knitr::kable(caption = "Largest cumulative GDPR fines by corporation
   footnote(general = "Companies with background in red are owned by corporations or individuals outside EU")
 
 ```
-Table \@ref(tab:table1) shows us the information about the ten corporations that have accumulated the most fines since the introduction of GDPR. `r table1$controller[1]` was fined `r table1$count[1]` times and had to pay a fortune of `r table1$total_price[1]/1000000` million euros. It is worth notice that `r arrange(table1,desc(count))$controller[1]` was fined `r arrange(table1,desc(count))$count[1]` times, the highest number of financial penalties received. A closer look at the Britist telecommunication company is provided in table \@ref(tab:table2). We discovered another fact: Not only did Vodafone España	receive a very high number of fines, its branch, Vodafone ONO also receive 2 fines. Together, Vodafone violated the GDPR 21 times in Spain, which is a fifth of the country's total number of violations.
-
-Overall, the last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations. Since the introduction of GDPR, most country has less than 30 violations, except for Spain. The country recorded about 100 GDPR financial penalties, 21 of which from Vodafone. It seems that Vodafone is targeted by the Spain authority.
 
 ```{r table2}
 # Vodafone only
