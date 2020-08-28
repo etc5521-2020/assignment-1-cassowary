@@ -1,20 +1,24 @@
 ---
 title: "ETC5521 Assignment 1"
-subtitle: "Fines or Taxes? Exploratory Data Analysis on General Data Protection Regulation Fines"
-team: cassowary
 author:
-  - Weihao Li
-  - Dang Nguyen
+- Weihao Li
+- Dang Thanh Nguyen
 date: "`r Sys.Date()`"
-bibliography: ref.bib
-output: 
-  html_document:
+output:
+  bookdown::html_document2:
     citation_package: biblatex
-    toc: true
-    toc_float: true
+    number_sections: yes
     theme: cerulean
-    number_sections: true
+    toc: yes
+    toc_float:
+      collapsed: yes
 csl: apa-6th-edition.csl
+subtitle: Fines or Taxes? Exploratory Data Analysis on General Data Protection Regulation
+  Fines
+team: cassowary
+bibliography: ref.bib
+biblio-style: authoryear-comp
+link-citations: yes
 ---
 
 <!-- CSS style for title page -->
@@ -40,7 +44,7 @@ h4.date {
 
 
 ```{r setup, include=FALSE}
-#Sset knitr option and system language for R kernel
+#Set knitr option and system language for R kernel
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 Sys.setlocale("LC_ALL","English")
 ```
@@ -52,6 +56,7 @@ library(lubridate)
 library(kableExtra)
 library(tidytext)
 library(wordcloud2)
+library(bookdown)
 ```
 
 [This assignment is for ETC5521 Assignment 1 by Team `r rmarkdown::metadata$team` comprising of `r knitr::combine_words(rmarkdown::metadata$author)`.]{style="color:#006DAE;"}
@@ -105,21 +110,26 @@ gdpr_vio <- mutate(gdpr_vio, price = if_else(price <= 0, NA_real_, price)) %>%
 ```
 
 
-The data is scraped from @Privacy-Affairs by @Ellis-Hughes, posted on @Tidy-Tuesday. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We collected data from 2018-05-12 to 2020-08-21. Besides, abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are obviously missing value, are set to be NA. All records with missing date are set to NA.
-We also further process inconsistency in corporation names. There are unnamed organizations that were fined by GDPR. In this report, all unnamed organizations are labelled as "Unknown". 
+The data is scraped from @Privacy-Affairs by @Ellis-Hughes, posted on @Tidy-Tuesday. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We collected data from 2018-05-12 to 2020-08-21. 
+
+Abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are obviously missing value, are set to be NA. All records with missing date are set to NA. We also further process inconsistency in corporation names. There are unnamed organizations that were fined by GDPR. In this report, all unnamed organizations are labelled as "Unknown". 
+
+The dataset has some limitations:  
+- Not all cases are presented in the dataset. The data only includes finalised cases and cases that are made public. This can lead to bias in further analysis
+- The controller of data, in many cases, are vaguely described, or not disclosed. This trend can lead to misunderstand and bias in further analysis.
 
 The data consist of two smaller dataset:
 
 1. `GDPR_Violations.tsv` contains information of `r nrow(gdpr_vio)` fines and penalties which data protection authorities in EU have imposed under EU General Data Protection Regulation (GDPR). The dataset contains variables including the country and authority, the date of violation, the fine price of violation in Euros, the controller that violate the rule, ... Detailed information of variable is presented below.
  
-2. `GDPR_text.tsv` contains `r nrow(gdpr_text)` articles of actual GDPR legal document. 
+2. `GDPR_text.tsv` contains `r nrow(as_tibble(unique(gdpr_text$article)))` articles of actual GDPR legal document. 
 
 ## Data Dictionary
 
 ### `gdpr_violations.tsv`
 
 |variable         |class     |description |
-|:---------------|:--------|:----------|
+|:----------------|:--------|:----------|
 |id               |integer   |Idetifier for fine/violation |
 |picture          |character | SVG image of violation country flag |
 |name             |character | Name of country where violation was enforced |
@@ -147,7 +157,8 @@ The data consist of two smaller dataset:
 
 ## Research questions
 
-The overall aim of this research is to reveal the privacy issues in cyberspace within the EU and examine whether General Data Protection Regulation fines were used as another type of "digital services tax" imposed on multinational technology corporations.
+The overall aim of this research is to reveal the privacy issues in cyberspace within the EU and examines the application of the General Data Protection Regulation in practice. 
+
 
 Three secondary questions are addressed in this research:
 
@@ -179,8 +190,11 @@ gdpr_vio %>%
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
+\@ref (fig:plot2) shows the number of GDPR violations that got fined from 2018 to 2020. Time periods when high number of GDPR fines were recorded are painted in red.   
+The last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations. 
 ```{r plot2}
 # Hightlight some bars
+# T: We can filter and highlight the bars that are larger than a set value. 
 gdpr_vio %>%
   filter(!is.na(date)) %>%
   ggplot() +
@@ -212,7 +226,7 @@ gdpr_vio %>%
   
 ```
 
-```{r plot4-Thanh}
+```{r plot4}
 gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
   ggplot(aes(x = count, y = fct_reorder(name, count))) +
   geom_bar(stat = "identity", aes(fill = count>50)) +
