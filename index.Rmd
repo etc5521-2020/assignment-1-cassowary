@@ -58,6 +58,7 @@ library(tidytext)
 library(wordcloud2)
 library(bookdown)
 library(plotly)
+library(rnaturalearth)
 ```
 
 [This assignment is for ETC5521 Assignment 1 by Team `r rmarkdown::metadata$team` comprising of `r knitr::combine_words(rmarkdown::metadata$author)`.]{style="color:#006DAE;"}
@@ -65,11 +66,11 @@ library(plotly)
 
 # Introduction and motivation
 
-General Data Protection Regulation (GDPR) is a regulation adopted in EU law on 14 April 2016, which aim to "protect fundamental rights and freedoms of natural persons and in particular their right to the protection of personal data" [@regulation2016regulation]. Since its establishment, @tikkinen2018eu stated that it would be a challenge to companies who lack of awareness of the GDPR’s practical implications. In other words, inconsistent practical and technical implementation of GDPR across companies could be anticipated. By August 2020, more than 49 companies have been fined at least 100 thousand euros. Most of these fines were issued to IT companies [@fine]. The most famous and largest GDPR fine was the 50 million euros fine issued to Google. 
+General Data Protection Regulation (GDPR) is a regulation adopted in EU law on 14 April 2016, which aim to "protect fundamental rights and freedoms of natural persons and in particular their right to the protection of personal data" [@regulation2016regulation]. Since its establishment, @tikkinen2018eu stated that it would be a challenge to companies who lack awareness of the GDPR’s practical implications. In other words, inconsistent practical and technical implementation of GDPR across companies could be anticipated. By August 2020, more than 49 companies have been fined at least 100 thousand euros. Most of these fines were issued to IT companies [@fine]. The most famous and largest GDPR fine was the 50 million euros fine issued to Google. 
 
 Meanwhile, @eufuture suggested that EU was in a bad position on the battle to its digital future. Besides, part of the reasons behind the GDPR establishment and the later digital services taxes imposed by major EU countries were an indication that EU was waving the flag of digital sovereignty. Thus, to against digital hegemony, it intentionally targeted non-local held IT corporations.
 
-Available data of GDPR fines from @Privacy-Affairs, provides an opportunity for us to gain insight into the privacy issues and possible abuse of articles of GDPR in EU. This dataset was originally adopted by @Tidy-Tuesday, which is a social weekly data project in R. We will provide the workflow of data collection, data cleaning and data analysis in the following sections. A potential limitation of this research is a great proportion of controller names are missing from the dataset which introduces extra difficulties of drawing accurate conclusions with respect to the company nationality.
+Available data of GDPR fines from @Privacy-Affairs, provides an opportunity for us to gain insight into the privacy issues and possible abuse of articles of GDPR in EU. This dataset was originally adopted by @Tidy-Tuesday, which is a social weekly data project in R. We will provide the workflow of data collection, data cleaning and data analysis in the following sections. A potential limitation of this research is a great proportion of controller names are missing from the dataset which introduces extra difficulties of drawing accurate conclusions with respect to the company nationality and identity. Another limitation is that we did little research on the political and legal world of the EU, which may reduce the accuracy of our conclusions.
 
  
 
@@ -163,18 +164,22 @@ The overall aim of this research is to reveal the privacy issues in cyberspace w
 
 Three secondary questions are addressed in this research:
 
-1. What were the characteristics of GDPR fines across countries, time and corporations? Did certain countries target certain corporations at certain time?
-2. Which articles and regulations were more likely to be violated? And how much they commonly charged? Was there any article and regulation being abused?
-3. What were the key arguments in each article, especially articles referenced the most in GDPR fines? How did it reflect the privacy issues in the EU?
+1. What were the characteristics of GDPR fines across countries, time and corporations? Did certain corporations being targeted by GDPR authorities?
+2. Which articles and regulations were more likely to be violated? And how much they commonly charged?
+3. What were the key words in each article, especially articles referenced the most in GDPR fines? How did it reflect the privacy issues in the EU?
 
 
 # Analysis and findings
 
 ## Characteristics of GDPR violations across countries, time and corporations
 
-```{r plot 1}
+In this part, the researchers want to find out: What were the characteristics of GDPR fines across countries, time and corporations? Did certain corporations being targeted by GDPR authorities?
+
+Figure \@ref(fig:plot1) shows the price of GDPR fines from 2018-2020. We can notice the high price clustering (dots in red) between Sep 2019 and Apr 2020. These outliers include Poland, Austria, Germany, Italy, Sweden and Netherlands. If we further research on the spatial patterns of these outliers in Figure \@(fig:outliers), we can see that these countries are all connected to each other. We suspect there are political reasons behind this phenomenon, which is worth for future study. Other than that, the reason we use log 10 scale of the price is because price is an extremely skewed distribution. Using log scale of the price can provide us with better data representation.
+
+```{r plot1, fig.cap="Boxplot of GDPR fines across time, 2018-2020"}
 # Draws multiple boxplots on different layers to display different colors
-gdpr_vio %>%
+plot1 <- gdpr_vio %>%
   filter(!is.na(date)) %>%
   ggplot() +
   geom_boxplot(aes(factor(month(date)), price), outlier.color = "#D7261E") +
@@ -183,14 +188,36 @@ gdpr_vio %>%
   geom_point(data = filter(filter(gdpr_vio, month(date) == 3, year(date) == 2020), 
                            price == min(price, na.rm = T)),
              aes(factor(month(date)), price)) +
+  geom_text(data = filter(filter(gdpr_vio, date>="2019-12-01"&date<="2020-04-01"), 
+                           price > 4e+05),
+             aes(factor(month(date)), price, label = name), size = 3.5) + 
+  geom_text(data = filter(filter(gdpr_vio, date>="2019-10-01"&date<="2019-11-30"), 
+                           price > 1e+06),
+             aes(factor(month(date)), price, label = name), size = 3.5) +
+  geom_text(data = filter(filter(gdpr_vio, date>="2019-09-01"&date<="2019-09-30"), 
+                           price > 2e+05),
+             aes(factor(month(date)), price, label = name), size = 3.5) +
   facet_wrap(~year(date)) +
   xlab("Month") + 
   ylab("Price (log10 scale)") +
   scale_y_log10()  +
   ggtitle("Boxplot of GDPR fines across time, 2018-2020")  +
   theme(plot.title = element_text(hjust = 0.5))
+
 ```
 
+```{r outliers, fig.cap="Spatial location of outliers from 09,2019 - 03,2020"}
+ne_countries(returnclass = "sf", country = c("Poland", "Germany", "Austria", "Italy", "Netherlands", "Sweden")) %>%
+  ggplot() +
+  geom_sf(aes(geometry = geometry)) +
+  geom_sf_text(aes(label = name), size = 3) +
+  coord_sf(xlim = c(0,25), ylim = c(35,70)) +
+  ggtitle("Spatial location of outliers from 09/2019 - 03/2020") +
+  xlab("Longitude") +
+  ylab("Latitude")
+```
+
+<<<<<<< HEAD
 ### Monthly number of GDPR violations 
 
 Figure \@ref(fig:plot2) shows the number of GDPR violations that got fined from 2018 to 2020. Time periods when high number of GDPR fines were recorded are painted in red in order to highlight possible trend. The last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations, with a peak of 35 controllers fined in March 2020.
@@ -213,7 +240,8 @@ gdpr_vio %>%
 
 
 ### Characteristics of GDPR violations across countries
-```{r plot3}
+
+```{r plot3, fig.cap="Boxplot of GDPR fines by country"}
 # Sort boxplots by median price
 gdpr_vio %>%
   filter(!is.na(price)) %>%
@@ -230,25 +258,34 @@ gdpr_vio %>%
   
 ```
 
+Figure \@ref(fig:plot4) demonstrates the number of fined GDPR violations by country from 2018 to 2020. While all country in the EU has less than 35 cases of GDPR violations except for Spain, which has nearly 100 cases, triple than that of Hungary, the second highest. It is an interesting trend that should be explored by further research. 
 ```{r plot4, fig.cap = "Number of GDPR violations by country, 2018-2020"}
-gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
-  ggplot(aes(x = count, y = fct_reorder(name, count))) +
-  geom_bar(stat = "identity", aes(fill = count>50)) +
-  xlab("Number of Violations")+
-  ylab("Country") +
+temp <- gdpr_vio %>%
+  .[['name']] %>%
+  unique()
+temp <- ne_countries(returnclass = "sf", country = temp)
+temp <- gdpr_vio %>%
+  group_by(name) %>%
+  summarise(count = n()) %>%
+  ungroup() %>%
+  right_join(temp, by = c("name" = "sovereignt"))
+p <- ggplot() +
+  geom_sf(data = temp, aes(geometry = geometry, fill = count, label = name)) +
+  coord_sf(xlim = c(-25,30), ylim = c(30,82)) +
+  scale_fill_continuous(type = "viridis") +
   labs(title = "Number of GDPR Violations by country, 2018-2020") +
-  scale_fill_manual(values = c("navyblue", "#D7261E")) + 
-  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
-
+  xlab("")+
+  ylab("")
+ggplotly(p)
 ```
 Figure \@ref(fig:plot4) demonstrates the number of fined GDPR violations by country from 2018 to 2020. While all country in the EU has less than 35 cases of GDPR violations except for Spain, which has nearly 100 cases, triple than that of Hungary, the second highest. This is an noticable trend that require further research. 
 
 ### Characteristics of GDPR violations across corporations
+Table \@ref(tab:table1) shows us the information about the ten corporations that have accumulated the most fines since the introduction of GDPR. `r table1$controller[1]` was fined `r table1$count[1]` times and had to pay a fortune of `r table1$total_price[1]/1000000` million euros. It is worth notice that VodaFone was fined 19 times, the highest number of financial penalties received. A closer look at the Britist telecommunication company is provided in table \@ref(tab:table2). We discovered another fact: Not only did Vodafone España	receive a very high number of fines, its branch, Vodafone ONO also receive 2 fines. Together, Vodafone violated the GDPR 21 times in Spain, which is a fifth of the country's total number of violations.
 
-
-Table \@ref(tab:table1) shows us the information about the ten corporations that have accumulated the most fines since the introduction of GDPR. `r table1$controller[1]` was fined `r table1$count[1]` times and had to pay a fortune of `r table1$total_price[1]/1000000` million euros. It is worth notice that `r arrange(table1,desc(count))$controller[1]` was fined `r arrange(table1,desc(count))$count[1]` times, the highest number of financial penalties received. A closer look at the Britist telecommunication company is provided in table \@ref(tab:table2). We discovered another fact: Not only did Vodafone España	receive a very high number of fines, its branch, Vodafone ONO also receive 2 fines. Together, Vodafone violated the GDPR 21 times in Spain, which is a fifth of the country's total number of violations.
 
 Overall, the last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations. Since the introduction of GDPR, most country has less than 30 violations, except for Spain. The country recorded about 100 GDPR financial penalties, 21 of which from Vodafone. It seems that Vodafone is targeted by the Spain authority.
+
 
 ```{r table1}
 # Detail table
@@ -288,11 +325,18 @@ gdpr_vio %>%
 ```
 
 
+Table \@ref(tab:table1) shows us the information about the ten corporations that have accumulated the most fines since the introduction of GDPR. Notice only three of them are non-local corporations, which suggests we can not reject the hypothesis of multinational corporation is being fairly treated by GDPR. 
+
+`r table1$controller[1]` was fined `r table1$count[1]` times and had to pay a fortune of `r table1$total_price[1]/1000000` million euros. It is worth notice that `r arrange(table1,desc(count))$controller[1]` was fined `r arrange(table1,desc(count))$count[1]` times, the highest number of financial penalties received. A closer look at the Britist telecommunication company is provided in table \@ref(tab:table2). We discovered another fact: Not only did Vodafone España	receive a very high number of fines, its branch, Vodafone ONO also receive 2 fines. Together, Vodafone violated the GDPR 21 times in Spain, which is a fifth of the country's total number of violations.
+
+Overall, the last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations. Since the introduction of GDPR, most country has less than 30 violations, except for Spain. The country recorded about 100 GDPR financial penalties, 21 of which from Vodafone. It seems that Vodafone is targeted by the Spain authority.
+
 ## Analysis of violated article
 
 In this part, the researchers want to find out: Which articles and regulations were more likely to be violated? And how much they commonly charged?
 
-\@ref(fig:art-plot1) answer the first question. Article 5 - "Principles relating to processing of personal data", Article 6 - "Lawfulness of processing" and Article 32 - "Security of processing" are most likely to get violated by controllers. In fact, more than half of all violations are related to this three article. It indicates that the "Processing" of personal data in EU has issues, which explain the high number of violations. 
+Figure \@ref(fig:art-plot1) answer the first question. Article 5 - "Principles relating to processing of personal data", Article 6 - "Lawfulness of processing" and Article 32 - "Security of processing" are most likely to get violated by controllers. In fact, more than half of all violations are related to this three article. It indicates that the "Processing" of personal data in EU has issues, which lead to high number of violations. Further research could explore this issues and provide a more detail and clearer view.
+
 ```{r art-plot1, fig.cap = "Number of violations by GDPR articles"}
 # Init a list
 art_list <- list()
@@ -333,8 +377,9 @@ tibble(id = paste0("Art. ", 1:100), count = unlist(lapply(art_list, sum))) %>%
   
 ```
 
+Figure \@ref(fig:artfines) shows us violation of Article 5, 6 and 32 will lead to a relatively large fine, and with a high chance the amount of the fine will falls between 10000-100000 euros. 
 
-```{r}
+```{r artfines, fig.cap="GDPR fines by article"}
 # Init a list
 price_list <- NULL
 
@@ -369,6 +414,8 @@ price_list %>%
 
 ## Text mining GDPR articles
 
+In this part, the researchers want to find out: What were the key words in each article, especially articles referenced the most in GDPR fines? How did it reflect the privacy issues in the EU?
+
 ```{r text mining}
 # Create word frequency and anti join useless words
 word_list <- gdpr_text %>%
@@ -383,7 +430,9 @@ word_list <- gdpr_text %>%
 
 ### Overview of words in GDPR articles
 
-```{r overall}
+Figure \@ref(fig:overall) reflects the key concerns in GDPR. From the word cloud, we can see some regular words related to law such as "article", "regulation", "paragraph" and "pursuant". We can also find words related to data governance, like "processing", "processor", "authority", "supervisory" and "commission". It seems like the GDPR provides a framework to govern the general data usage within EU and empower some authorities to supervise companies. More importantly, there are words explaining the spirit of GDPR, which are "freedom", "personal", "rights" and "public". It tells us GDPR concerns about the personal and public freedom. Besides, we feel surprise that "privacy" is not a key words in GDPR.
+
+```{r overall, fig.cap="Word cloud of GDPR"}
 
 # Drop article attribute
 temp <- data.frame(word = word_list$word, count = word_list$count)
@@ -401,9 +450,11 @@ wordcloud2(temp, size = 0.3)
 
 ```
 
-## Words in Article 5, 6 and 32 respectively
+### Words in Article 5, 6 and 32 respectively
 
-```{r}
+In Table \@ref(tab:artmostword), there are words that repeatedly occurs. They are "data", "process", "personal" and "controller". It suggests the most common privacy issue in EU is illegal processing of personal data. We can also find the most different words are "access" in Article 32, "subject" in Article 6 and "purposes" and "manner" in Article 5. It reflects slightly different core topics in these 3 articles. However, they are very similar overall. 
+
+```{r artmostword}
 # List the top 5 words
 word_list %>%
   filter(article %in% c(5,6,32)) %>%
@@ -418,7 +469,7 @@ word_list %>%
 ```
 
 
-## Overview of trigrams in GDPR articles
+### Overview of trigrams in GDPR articles
 
 ```{r}
 # Extract trigrams
@@ -438,7 +489,14 @@ word_list <- gdpr_text %>%
 ```
 
 
-```{r}
+Trigram analysis can often provide us more useful information about a text document. Figure \@ref(fig:wordc2) provides us with very special "GDPR" words. We can see "data protection officer", which is probably the officer work for the authority. "competent supervisory authority" is probably referring to the data protection authority.
+
+Notice that there is a term "binding corporate rules", this represent multinational corporations are allowed to transfer personal data in a intra-organizational manner. This rules increases the risk of potential leak of personal data on other nations outside EU.
+
+Ignore these highly complicated article phrases, we can still find some interesting terms we are familiar with. Like the one "historical research purpose". It suggests data analysis is under consideration of GDPR.
+
+
+```{r wordc2, fig.cap="Word cloud of trigram in GDPR"}
 # Drop article attribute
 temp <- data.frame(word = word_list$trigram, count = word_list$count)
 
@@ -452,8 +510,6 @@ temp <- temp %>%
 
 wordcloud2(temp, size = 0.2)
 ```
-
-
 
 
 ## Major findings
@@ -473,19 +529,22 @@ Another research field that can be focusd on is the issues in the "Processing" o
 # Conclusion  
 
 
+GDPR is one of the most famous regulations on personal data protection. We do find some suspicious clustering of GDPR fines issued in the last quarter of 2019 and the first quarter of 2020. Besides, no such evidence supports that GDPR was generally used as an alternative to "digital service tax" against multinational corporations. However, one particular corporation, Vodafone, was targeted by the Spanish Data Protection Authority multiple times, which might be a special case. From the violation of articles and the text of GDPR, we find the most serious privacy issue in EU is personal data being processed unlawfully. 
 
 # Acknowledgement
 
 Following R packages are used in producing this research:
-@tidyverse,  
-@kableExtra, 
-@ggplot2, 
-@plotly, 
-@bookdown, 
-@wordcloud2, 
-@lubridate, 
-@tidytext
 
+- rmarkdown: @rmarkdown
+- tidyverse: @tidyverse 
+- kableExtra: @kableExtra 
+- ggplot2: @ggplot2 
+- plotly: @plotly 
+- bookdown: @bookdown 
+- wordcloud2: @wordcloud2 
+- lubridate: @lubridate 
+- tidytext: @tidytext
+- rnaturalearth: @rna
 
 # References
 
