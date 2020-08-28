@@ -453,7 +453,14 @@ wordcloud2(temp, size = 0.2)
 # Acknowledgement
 
 Following R packages are used in producing this research:
-@tidyverse,  @kableExtra, @ggplot2, @plotly, @bookdown, @wordcloud2, @lubridate, @tidytext
+@tidyverse,  
+@kableExtra, 
+@ggplot2, 
+@plotly, 
+@bookdown, 
+@wordcloud2, 
+@lubridate, 
+@tidytext
 
 
 # References
