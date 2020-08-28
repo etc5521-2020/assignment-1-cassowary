@@ -57,6 +57,7 @@ library(kableExtra)
 library(tidytext)
 library(wordcloud2)
 library(bookdown)
+library(plotly)
 ```
 
 [This assignment is for ETC5521 Assignment 1 by Team `r rmarkdown::metadata$team` comprising of `r knitr::combine_words(rmarkdown::metadata$author)`.]{style="color:#006DAE;"}
@@ -191,7 +192,7 @@ gdpr_vio %>%
 ```
 
 \@ref (fig:plot2) shows the number of GDPR violations that got fined from 2018 to 2020. Time periods when high number of GDPR fines were recorded are painted in red in order to highlight possible trend. The last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations. 
-```{r plot2}
+```{r plot2, fig.cap="Number of GDPR violations by year, 2018-2020"}
 # Hightlight some bars
 # T: We can filter and highlight the bars that are larger than a set value. 
 gdpr_vio %>%
@@ -225,7 +226,7 @@ gdpr_vio %>%
   
 ```
 
-```{r plot4}
+```{r plot4, fig.cap = "Number of GDPR violations by country, 2018-2020"}
 gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
   ggplot(aes(x = count, y = fct_reorder(name, count))) +
   geom_bar(stat = "identity", aes(fill = count>50)) +
@@ -258,7 +259,7 @@ table1 %>%  knitr::kable(caption = "Largest cumulative GDPR fines by corporation
   footnote(general = "Companies with background in red are owned by corporations or individuals outside EU")
 
 ```
-\@ref(tab:table1) shows us the information about the ten corporations that have accumulated the most fines since the introduction of GDPR. `r table1$controller[1]` was fined `r table1$count[1]` times and had to pay a fortune of `r table1$total_price[1]/1000000` million euros. It is worth notice that `r arrange(table1,desc(count))$controller[1]` was fined `r arrange(table1,desc(count))$count[1]` times, the highest number of financial penalties received. A closer look at the Britist telecommunication company is provided in \@ref(tab:table2). We discovered another fact: Not only did Vodafone España	receive a very high number of fines, its branch, Vodafone ONO also receive 2 fines. Together, Vodafone violated the GDPR 21 times in Spain, which is a fifth of the country's total number of violations.
+Table \@ref(tab:table1) shows us the information about the ten corporations that have accumulated the most fines since the introduction of GDPR. `r table1$controller[1]` was fined `r table1$count[1]` times and had to pay a fortune of `r table1$total_price[1]/1000000` million euros. It is worth notice that `r arrange(table1,desc(count))$controller[1]` was fined `r arrange(table1,desc(count))$count[1]` times, the highest number of financial penalties received. A closer look at the Britist telecommunication company is provided in table \@ref(tab:table2). We discovered another fact: Not only did Vodafone España	receive a very high number of fines, its branch, Vodafone ONO also receive 2 fines. Together, Vodafone violated the GDPR 21 times in Spain, which is a fifth of the country's total number of violations.
 
 Overall, the last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations. Since the introduction of GDPR, most country has less than 30 violations, except for Spain. The country recorded about 100 GDPR financial penalties, 21 of which from Vodafone. It seems that Vodafone is targeted by the Spain authority.
 
@@ -281,7 +282,10 @@ gdpr_vio %>%
 
 ## Analysis of violated article
 
-```{r art-plot}
+In this part, the researchers want to find out: Which articles and regulations were more likely to be violated? And how much they commonly charged?
+
+\@ref(fig:art-plot1) answer the first question. Article 5 - "Principles relating to processing of personal data", Article 6 - "Lawfulness of processing" and Article 32 - "Security of processing" are most likely to get violated by controllers. In fact, more than half of all violations are related to this three article. It indicates that the "Processing" of personal data in EU has issues, which lead to high number of violations. Further research could explore this issues and provide a more detail and clearer view.
+```{r art-plot1, fig.cap = "Number of violations by GDPR articles"}
 # Init a list
 art_list <- list()
 
@@ -309,7 +313,7 @@ for (i in 1:100){
 }
 
 # Add up all logical values for each article (lapply), unlist them as a vector
-data.frame(id = paste0("Art. ", 1:100), count = unlist(lapply(art_list, sum))) %>%
+tibble(id = paste0("Art. ", 1:100), count = unlist(lapply(art_list, sum))) %>%
   filter(count > 0) %>%
   ggplot() +
   geom_bar(aes(y = fct_reorder(id, count), x = count, fill = count > 50), stat = "identity") +
@@ -357,7 +361,7 @@ price_list %>%
 
 ## Text mining GDPR articles
 
-```{r}
+```{r text mining}
 # Create word frequency and anti join useless words
 word_list <- gdpr_text %>%
   select(article, text = gdpr_text) %>%
@@ -449,7 +453,7 @@ wordcloud2(temp, size = 0.2)
 # Acknowledgement
 
 Following R packages are used in producing this research:
-
+@tidyverse,  @kableExtra, @ggplot2, @plotly, @bookdown, @wordcloud2, @lubridate, @tidytext
 
 
 # References
