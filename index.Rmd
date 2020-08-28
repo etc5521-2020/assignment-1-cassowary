@@ -174,7 +174,7 @@ Three secondary questions are addressed in this research:
 
 In this part, the researchers want to find out: What were the characteristics of GDPR fines across countries, time and corporations? Did certain corporations being targeted by GDPR authorities?
 
-Figure \@ref(fig:plot1) shows the price of GDPR fines from 2018-2020. We can notice the high price clustering (dots in red) between Sep 2019 and Apr 2020. These outliers include Poland, Austria, Germany, Italy, Sweden and Netherlands. If we further research on the spatial patterns of these outliers in Figure \@(fig:outliers), we can see that these countries are all connected to each other. We suspect there are political reasons behind this phenomenon, which is worth for future study. Other than that, the reason we use log 10 scale of the price is because price is an extremely skewed distribution. Using log scale of the price can provide us with better data representation.
+Figure \@ref(fig:plot1) shows the price of GDPR fines from 2018-2020. We can notice the high price clustering (dots in red) between Sep 2019 and Apr 2020. These outliers include Poland, Austria, Germany, Italy, Sweden and Netherlands. If we further research on the spatial patterns of these outliers in Figure \@ref(fig:outliers), we can see that these countries are all connected to each other. We suspect there are political reasons behind this phenomenon, which is worth for future study. Other than that, the reason we use log 10 scale of the price is because price is an extremely skewed distribution. Using log scale of the price can provide us with better data representation.
 
 ```{r plot1, fig.cap="Boxplot of GDPR fines across time, 2018-2020"}
 # Draws multiple boxplots on different layers to display different colors
@@ -196,8 +196,7 @@ gdpr_vio %>%
   geom_text(data = filter(filter(gdpr_vio, date>="2019-09-01"&date<="2019-09-30"), 
                            price > 2e+05),
              aes(factor(month(date)), price, label = name), size = 3, vjust= 1) +
-  facet_wrap(~year(date)) +
-  expand_limits(x = c(-1,14))+
+  facet_wrap(~year(date))+
   xlab("Month") + 
   ylab("Price (log10 scale)") +
   scale_y_log10()  +
@@ -220,6 +219,7 @@ ne_countries(returnclass = "sf", country = c("Poland", "Germany", "Austria", "It
 ### Monthly number of GDPR violations 
 
 Figure \@ref(fig:plot2) shows the number of GDPR violations that got fined from 2018 to 2020. Time periods when high number of GDPR fines were recorded are painted in red in order to highlight possible trend. The last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations, with a peak of 35 controllers fined in March 2020.
+
 ```{r plot2, fig.cap="Monthly number of GDPR violations by year, 2018-2020"}
 # Hightlight some bars
 # T: We can filter and highlight the bars that are larger than a set value. 
@@ -257,7 +257,7 @@ gdpr_vio %>%
   
 ```
 
-Figure \@ref(fig:plot4) demonstrates the number of fined GDPR violations by country from 2018 to 2020. While all country in the EU has less than 35 cases of GDPR violations except for Spain, which has nearly 100 cases, triple than that of Hungary, the second highest. It is an interesting trend that should be explored by further research. 
+From Figure \@ref(fig:plot3), we can clearly observe a difference between developed countries and developing countries. Generally, authorities of countries with high GDP are more likely to issue large GDPR fines.
 
 ```{r plot4, fig.cap = "Number of GDPR violations by country, 2018-2020"}
 gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
@@ -355,7 +355,7 @@ for (i in 1:100){
 }
 
 # Add up all logical values for each article (lapply), unlist them as a vector
-art_1 <- tibble(id = paste0("Art. ", 1:100), count = unlist(lapply(art_list, sum))) %>%
+tibble(id = paste0("Art. ", 1:100), count = unlist(lapply(art_list, sum))) %>%
   filter(count > 0) %>%
   ggplot() +
   geom_bar(aes(y = fct_reorder(id, count), x = count, fill = count > 50), stat = "identity") +
@@ -442,7 +442,7 @@ wordcloud2(temp, size = 0.3)
 
 ### Words in Article 5, 6 and 32 respectively
 
-In Table \@ref(tab:artmostword), there are words that repeatedly occurs. They are "data", "process", "personal" and "controller". It suggests the most common privacy issue in EU is illegal processing of personal data. We can also find the most different words are "access" in Article 32, "subject" in Article 6 and "purposes" and "manner" in Article 5. It reflects slightly different core topics in these 3 articles. However, they are very similar overall. 
+In Table \@ref(tab:artmostword), there are words that repeatedly occurs. They are "data", "process", "personal" and "controller". It suggests the most common privacy issue in EU is illegal processing of personal data. We can also find the most different words are "access" in Article 32, "subject" in Article 6 and "purposes" and "manner" in Article 5. It reflects slightly different core topics in these 3 articles. Other than that, they are very similar overall. 
 
 ```{r artmostword}
 # List the top 5 words
@@ -479,11 +479,11 @@ word_list <- gdpr_text %>%
 ```
 
 
-Trigram analysis can often provide us more useful information about a text document. Figure \@ref(fig:wordc2) provides us with very special "GDPR" words. We can see "data protection officer", which is probably the officer work for the authority. "competent supervisory authority" is probably referring to the data protection authority.
+Trigram analysis can often provide us with more useful information about a text document. Figure \@ref(fig:wordc2) provides us with very special "GDPR" words. We can see "data protection officer", which is probably the officer work for the authority, and "competent supervisory authority", which is probably referring to the data protection authority.
 
-Notice that there is a term "binding corporate rules", this represent multinational corporations are allowed to transfer personal data in a intra-organizational manner. This rules increases the risk of potential leak of personal data on other nations outside EU.
+Notice that there is a term "binding corporate rules", this represents multinational corporations are allowed to transfer personal data in a intra-organizational manner. This rules increases the risk of potential leak of personal data on other nations outside EU.
 
-Ignore these highly complicated article phrases, we can still find some interesting terms we are familiar with. Like the one "historical research purpose". It suggests data analysis is under consideration of GDPR.
+Ignore these highly complicated article phrases, we can still find some interesting terms which we are familiar with. Like the one "historical research purpose". It suggests data analysis is under consideration of GDPR.
 
 
 ```{r wordc2, fig.cap="Word cloud of trigram in GDPR"}
@@ -517,7 +517,7 @@ Another research field that can be focusd on is the issues in the "Processing" o
 # Conclusion  
 
 
-GDPR is one of the most famous regulations on personal data protection. We do find some suspicious clustering of GDPR fines issued in the last quarter of 2019 and the first quarter of 2020. Besides, no such evidence supports that GDPR was generally used as an alternative to "digital service tax" against multinational corporations. However, one particular corporation, Vodafone, was targeted by the Spanish Data Protection Authority multiple times, which might be a special case. From the violation of articles and the text of GDPR, we find the most serious privacy issue in EU is the processing of personal data.
+GDPR is one of the most famous regulations on personal data protection. There are some suspicious clustering of GDPR fines issued in the last quarter of 2019 and the first quarter of 2020. Besides, no such evidence supports that GDPR was generally used as an alternative to "digital service tax" against multinational corporations. However, one particular corporation, Vodafone, was targeted by the Spanish Data Protection Authority multiple times, which might be a special case. Moreover, the GDPR fines revealed that the most serious privacy issue in EU is the processing of personal data.
 
 # Acknowledgement
 
