@@ -6,6 +6,8 @@ Team members:
 
 * Weihao Li
 * Dang Nguyen
+* Brenwin 
+* Muhammad Soban Qasim
 
 # Steps
 
