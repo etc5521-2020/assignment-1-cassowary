@@ -4,8 +4,8 @@ Team name: cassowary
 
 Team members:
 
-* Weihao Li
-* Dang Nguyen
+* (Weihao Li)
+* (Dang Nguyen)
 * Brenwin 
 * Muhammad Soban Qasim
 

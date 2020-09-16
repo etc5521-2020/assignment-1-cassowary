@@ -1,8 +1,10 @@
 ---
 title: "ETC5521 Assignment 1"
 author:
-- Weihao Li
-- Dang Thanh Nguyen
+- (Weihao Li)
+- (Dang Thanh Nguyen)
+- Brenwin
+- Muhammad Soban Qasim
 date: "`r Sys.Date()`"
 output:
   bookdown::html_document2:
