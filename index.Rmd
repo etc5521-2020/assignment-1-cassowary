@@ -525,7 +525,7 @@ Another research field that can be focused on is the issues in the "Processing" 
 
 GDPR is one of the most famous regulations on personal data protection. There are some suspicious clustering of GDPR fines issued in the last quarter of 2019 and the first quarter of 2020. Besides, no such evidence supports that GDPR was generally used as an alternative to "digital service tax" against multinational corporations. However, one particular corporation, Vodafone, was targeted by the Spanish Data Protection Authority multiple times, which might be a special case. Moreover, the GDPR fines revealed that the most serious privacy issue in EU is the processing of personal data.
 
-
+ 
 # Acknowledgement
 
 Following R packages are used in producing this research:
