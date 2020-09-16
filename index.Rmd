@@ -49,10 +49,8 @@ h4.date {
 #Set knitr option and system language for R kernel
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 Sys.setlocale("LC_ALL","English")
-```
 
-```{r libra}
-# Load in packages
+# load libraries
 library(tidyverse)
 library(lubridate)
 library(kableExtra)
@@ -63,19 +61,24 @@ library(plotly)
 library(rnaturalearth)
 ```
 
+
 [This assignment is for ETC5521 Assignment 1 by Team `r rmarkdown::metadata$team` comprising of `r knitr::combine_words(rmarkdown::metadata$author)`.]{style="color:#006DAE;"}
 
 
 # Introduction and motivation
 
-General Data Protection Regulation (GDPR) is a regulation adopted in EU law on 14 April 2016, which aim to "protect fundamental rights and freedoms of natural persons and in particular their right to the protection of personal data" [@regulation2016regulation]. Since its establishment, @tikkinen2018eu stated that it would be a challenge to companies who lack awareness of the GDPR’s practical implications. In other words, inconsistent practical and technical implementation of GDPR across companies could be anticipated. By August 2020, more than 49 companies have been fined at least 100 thousand euros. Most of these fines were issued to IT companies [@fine]. The most famous and largest GDPR fine was the 50 million euros fine issued to Google. 
+General Data Protection Regulation (GDPR) is a regulation that came into effect on 25 May 2018. GDPR aims to "protect fundamental rights and freedoms of natural persons and in particular their right to the protection of personal data" [@regulation2016regulation]. GDPR imposes obligations onto organisations anywhere, so long they target or collect data related to people in EU.   
 
-Meanwhile, @eufuture suggested that EU was in a bad position on the battle to its digital future. Besides, part of the reasons behind the GDPR establishment and the later digital services taxes imposed by major EU countries were an indication that EU was waving the flag of digital sovereignty. Thus, to against digital hegemony, it intentionally targeted non-local held IT corporations.
+Since its establishment, @tikkinen2018eu stated that it would be a challenge to companies who lack awareness of the GDPR’s practical implications. In other words, inconsistent practical and technical implementation of GDPR across companies could be anticipated. By August 2020, more than 49 companies have been fined at least 100 thousand euros. Most of these fines were issued to IT companies [@fine]. The most famous and largest GDPR fine was the 50 million euros fine issued to Google. 
 
-Available data of GDPR fines from @Privacy-Affairs, provides an opportunity for us to gain insight into the privacy issues and possible abuse of articles of GDPR in EU. This dataset was originally adopted by @Tidy-Tuesday, which is a social weekly data project in R. We will provide the workflow of data collection, data cleaning and data analysis in the following sections. 
+Meanwhile, @eufuture suggested that EU was in a bad position on the battle to its digital future. Besides, part of the reasons behind the GDPR establishment and the later digital services taxes imposed by major EU countries were an indication that EU was waving the flag of digital sovereignty. Thus, against digital hegemony, it intentionally targeted non-local held IT corporations.
+
+Available data of GDPR fines from @Privacy-Affairs, provides an opportunity for us to gain insight into the privacy issues and possible abuse of articles of GDPR in EU. This dataset was originally adopted by @Tidy-Tuesday, which is a social weekly data project in R. [github address here](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-04-21/readme.md) We outline the workflow of data collection, data cleaning and data analysis in the following sections. 
 
 # Limitations
 A potential limitation of this research is a great proportion of controller names(about 10%) are missing from the data set which introduces extra difficulties to draw accurate conclusions with respect to the company nationality and identity. 
+
+Fines documented by @Privacy-Affairs pertains to fines made public hence many of the fines may not be present. We might think of this data set as "high-profile" fines. 
 
  
 # Data description
@@ -118,22 +121,23 @@ gdpr_vio <- gdpr_vio %>%
   mutate(article_violated = if_else(article_violated == "Failure to implement sufficient measures to ensure information security", "Art.32 GDPR", article_violated))
 ```
 
+The data is scraped from @Privacy-Affairs by @Ellis-Hughes, posted on @Tidy-Tuesday. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We looked at data spanning from 2018-05-12 to 2020-08-21. 
 
-The data is scraped from @Privacy-Affairs by @Ellis-Hughes, posted on @Tidy-Tuesday. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We collected data from 2018-05-12 to 2020-08-21. 
+Abnormal values including fines with 0 price, indicating ongoing trails and fines before the establishment of the GDPR (which are missing values) are set NA. Records with missing date are also set to NA. We further process inconsistency in corporation names. There are a number of unnamed organizations fined by GDPR. in the data set. These are labelled as "Unknown". 
 
-Abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are missing value, are set to be NA. All records with missing date are set to NA. We also further process inconsistency in corporation names. There are unnamed organizations that were fined by GDPR. In this report, all unnamed organizations are labelled as "Unknown". 
-
-The dataset has some limitations that can be observed from the original source @Privacy-Affairs:  
+The dataset has some limitations that can be identified by the source @Privacy-Affairs:  
 - Not all cases are presented in the dataset. The data only includes finalised cases and cases that are made public. This can lead to bias in further analysis.
-- The controller of data, in many cases, are vaguely described, or not disclosed. This trend can lead to misunderstand and bias in further analysis.
+- The controller of data, in many cases, are vaguely described, or not disclosed. This may lead to misunderstanding and bias in our analysis.
 
-The data consist of two smaller dataset:
+The data consist of two datasets:
 
-1. `GDPR_Violations.tsv` contains information of `r nrow(gdpr_vio)` fines and penalties which data protection authorities in EU have imposed under EU General Data Protection Regulation (GDPR). The dataset contains variables including the country and authority, the date of violation, the fine price of violation in Euros, the controller that violate the rule, ... Detailed information of variable is presented below.
+1. `GDPR_Violations.tsv` contains information of `r nrow(gdpr_vio)` fines/penalties which data protection authorities (in EU) have imposed under GDPR. The dataset contains variables includes the country(where violation enforced) and authority, date of violation, fine price of violation in Euros. 
  
-2. `GDPR_text.tsv` contains `r nrow(as_tibble(unique(gdpr_text$article)))` articles of actual GDPR legal document. It is structured to 
+2. `GDPR_text.tsv` contains articles of GDPR (`r nrow(as_tibble(unique(gdpr_text$article)))` of them). Included are Chapter title, article number, artcile title and raw text of the article.
 
-## Data Dictionary
+Each variable are detailed in next the Section (\@ref(datadic)).
+
+## Data Dictionary {#datadic}
 
 ### `gdpr_violations.tsv`
 
@@ -166,14 +170,13 @@ The data consist of two smaller dataset:
 
 ## Research questions
 
-The overall aim of this research is to reveal the privacy issues in cyberspace in the EU (imposed by GDPR) and examines the application of the General Data Protection Regulation in practice. 
-
+The overall aim of this research is to examine the demographics in the application of the GDPR in practice since its implementation (in 25 May 2018) and unveil prevalent privacy issues in cyberspace in the EU.
 
 Three secondary questions are addressed in this research:
 
 1. What were the characteristics of GDPR fines across countries, time and corporations? Did certain corporations being targeted by GDPR authorities?
 2. Which articles and regulations were more likely to be violated? And how much they commonly charged?
-3. What were the key words in each article, especially articles referenced the most in GDPR fines? How did it reflect the privacy issues in the EU?
+3. What were the key words in each article, especially articles referenced the most in GDPR fines? Does this mean anything such as particular privacy issues?
 
 ## Additional Questions
 Questions  
@@ -188,11 +191,31 @@ Improvements
 
 # Analysis and findings
 
-## Characteristics of GDPR violations across countries, time and corporations
+## GDP violations across time since its implementation
 
-In this part, the researchers want to find out: What were the characteristics of GDPR fines across countries, time and corporations? Did certain corporations being targeted by GDPR authorities?
+Figure \@ref(fig:plot2) shows the number of GDPR fines dished out in for each month for years 2018-2020. Time periods when high number of GDPR fines were recorded are highlighted red. The last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations, with a peak of 35 controllers fined in March 2020.
 
-Figure \@ref(fig:plot1) shows the price of GDPR fines from 2018-2020. We can notice the high price clustering (dots in red) between Sep 2019 and Apr 2020. These outliers include Poland, Austria, Germany, Italy, Sweden and Netherlands. If we further research on the spatial patterns of these outliers in Figure \@ref(fig:outliers), we can see that these countries are all connected to each other. We suspect there are political reasons behind this phenomenon, which is worth for future study. Other than that, the reason we use log 10 scale of the price is because price is an extremely skewed distribution. Using log scale of the price can provide us with better data representation.
+Figure \@ref(fig:plot1) shows log price of GDPR fines against month for 2018-2020. We notice high price clustering (dots in red) between Sep 2019 and Apr 2020.  
+log price was used because price is an extremely skewed distribution. Using log scale of the price provide us with better data plot.
+
+These outliers include Poland, Austria, Germany, Italy, Sweden and Netherlands. Looking at the spatial patterns of these outliers in Figure \@ref(fig:outliers), we see countries are all closely connected to one other. We suspect there could be political reasons which could be worth the further study.
+
+```{r plot2, fig.cap="Monthly number of GDPR violations by year, 2018-2020"}
+# Hightlight some bars
+# T: We can filter and highlight the bars that are larger than a set value. 
+gdpr_vio %>%
+  filter(!is.na(date)) %>%
+  ggplot() +
+  geom_bar(aes(factor(month(date)), fill = date >="2019-10-01" & date <="2020-03-31" | month(date) == 6 & year(date) == 2020)) +
+  facet_wrap(~year(date)) +
+  ylab("Number of Violations") +
+  xlab("Month") +
+  scale_fill_manual(values = c("navyblue", "#D7261E")) +
+  labs(title = "Number of GDPR Violations, 2018-2020") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none") +
+  theme_bw() +
+  guides(fill = FALSE)
+```
 
 ```{r plot1, fig.cap="Boxplot of GDPR fines across time, 2018-2020"}
 # Draws multiple boxplots on different layers to display different colors
@@ -216,10 +239,11 @@ gdpr_vio %>%
              aes(factor(month(date)), price, label = name), size = 3, vjust= 1) +
   facet_wrap(~year(date))+
   xlab("Month") + 
-  ylab("Price (log scale)") +
+  ylab("log price") +
   scale_y_log10()  +
   ggtitle("Boxplot of GDPR fines across time, 2018-2020")  +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_bw()
 ```
 
 ```{r outliers, fig.cap="Spatial location of outliers from 09,2019 - 03,2020"}
@@ -230,32 +254,63 @@ ne_countries(returnclass = "sf", country = c("Poland", "Germany", "Austria", "It
   coord_sf(xlim = c(0,25), ylim = c(35,70)) +
   ggtitle("Spatial location of outliers from 09/2019 - 03/2020") +
   xlab("Longitude") +
-  ylab("Latitude")
+  ylab("Latitude") +
+  ggthemes::theme_map()
 ```
 
-### Monthly number of GDPR violations 
 
-Figure \@ref(fig:plot2) shows the number of GDPR violations that got fined from 2018 to 2020. Time periods when high number of GDPR fines were recorded are painted in red in order to highlight possible trend. The last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations, with a peak of 35 controllers fined in March 2020.
 
-```{r plot2, fig.cap="Monthly number of GDPR violations by year, 2018-2020"}
-# Hightlight some bars
-# T: We can filter and highlight the bars that are larger than a set value. 
-gdpr_vio %>%
-  filter(!is.na(date)) %>%
+
+### Characteristics of GDPR violations across countries (How commited are countries; in enforcing GDPR)
+
+```{r, countries-fines}
+# extract countries in data set
+gdpr_countries <- gdpr_vio %>% 
+  distinct(name) %>% 
+  pull()
+
+# get sf objects; filter to countries in data set
+countries_sf <- ne_countries(country = c(gdpr_countries,
+                                         "Czechia"), # for Czech Republic
+                             scale = "large",
+                             returnclass = "sf") %>% 
+  select(name, geometry) %>% 
+  mutate(name = replace(name, name == "Czechia", "Czech Republic"))
+
+# Group fines by country; merge with sf
+countries_map <- gdpr_vio %>% 
+  group_by(name) %>% 
+  mutate(
+    # sum fines in each country
+    price_sum = sum(price, na.rm = TRUE),
+    # price category
+    price_cat = case_when(
+      price_sum >= 0 & price_sum <= 10000 ~ "0-10K",
+      price_sum > 10000 & price_sum <= 50000 ~ "10K-50K",
+      price_sum > 50000 & price_sum <= 100000 ~ "50K-100K",
+      price_sum > 10000 & price_sum <= 500000 ~ "100K-500K",
+      price_sum > 500000 & price_sum <= 1000000 ~ "500K-1M",
+      price_sum > 1000000 & price_sum <= 10000000 ~ "1M-10M",
+      price_sum > 10000000 ~ ">10M")) %>% 
+  select(name, price_sum, price_cat) %>% 
+  distinct()
+
+# join countries_map data set with geom info
+countries_map <- left_join(countries_map, countries_sf,
+          by = c("name"))
+
+countries_map %>% 
   ggplot() +
-  geom_bar(aes(factor(month(date)), fill = date >="2019-10-01" & date <="2020-03-31" | month(date) == 6 & year(date) == 2020)) +
-  facet_wrap(~year(date)) +
-  ylab("Number of Violations") +
-  xlab("Month") +
-  scale_fill_manual(values = c("navyblue", "#D7261E")) +
-  labs(title = "Number of GDPR Violations, 2018-2020") +
-  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
-  
+  geom_sf(aes(geometry = geometry,
+              fill = price_cat)) +
+  scale_fill_viridis(discrete = TRUE) +
+  # zoom in; by setting limits 
+  coord_sf(xlim = c(-27.5, 37.5),
+           ylim = c(32.5, 82.5),
+           expand = FALSE) # take; exact limits (xlim/ ylim)
 
 ```
 
-
-### Characteristics of GDPR violations across countries
 
 ```{r plot3, fig.cap="Boxplot of GDPR fines by country"}
 # Sort boxplots by median price
@@ -265,19 +320,20 @@ gdpr_vio %>%
   summarise(md = median(price, na.rm = TRUE)) %>%
   right_join(filter(gdpr_vio, !is.na(price))) %>%
   ggplot() +
-  geom_boxplot(aes(price, fct_reorder(name, md, .desc = T))) +
+  geom_boxplot(aes(price, fct_reorder(name, md, .desc = F))) +
   scale_x_log10() +
   ylab("Country") + 
   xlab("Price (log10 scale)") +
   ggtitle("Boxplot of GDPR fines by country") +
   theme(plot.title = element_text(hjust = 0.5))
-  
 ```
 
 From Figure \@ref(fig:plot3), we can clearly observe a difference between developed countries and developing countries. Generally, authorities of countries with high GDP are more likely to issue large GDPR fines.
 
 ```{r plot4, fig.cap = "Number of GDPR violations by country, 2018-2020"}
-gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
+gdpr_vio %>% 
+  group_by(name) %>% 
+  summarise (count = n()) %>%
   ggplot(aes(x = count, y = fct_reorder(name, count))) +
   geom_bar(stat = "identity", aes(fill = count>50)) +
   xlab("Number of Violations")+
@@ -285,16 +341,13 @@ gdpr_vio %>% group_by(name) %>% summarise (count = n()) %>%
   labs(title = "Number of GDPR Violations by country, 2018-2020") +
   scale_fill_manual(values = c("navyblue", "#D7261E")) + 
   theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
-
-
 ```
 
 Figure \@ref(fig:plot4) demonstrates the number of fined GDPR violations by country from 2018 to 2020. While all country in the EU has less than 35 cases of GDPR violations except for Spain, which has nearly 100 cases, triple than that of Hungary, the second highest. This is an noticable trend that require further research. 
 
 ### Characteristics of GDPR violations across corporations
 
-
-
+Was certain corporations being targeted by GDPR authorities?
 ```{r table1}
 # Detail table
 table1 <- gdpr_vio %>%
@@ -320,6 +373,8 @@ Table \@ref(tab:table1) shows us the information about the ten corporations that
 `r table1$controller[1]` was fined `r table1$count[1]` times and had to pay a fortune of `r table1$total_price[1]/1000000` million euros. It is worth notice that `r arrange(table1,desc(count))$controller[1]` was fined `r arrange(table1,desc(count))$count[1]` times, the highest number of financial penalties received. A closer look at the Britist telecommunication company is provided in table \@ref(tab:table2). We discovered another fact: Not only did Vodafone España	receive a very high number of fines, its branch, Vodafone ONO also receive 2 fines. Together, Vodafone violated the GDPR 21 times in Spain, which is a fifth of the country's total number of violations.
 
 Overall, the last quarter of 2019 and the first quarter of 2020 saw the highest number of GDPR violations. Since the introduction of GDPR, most country has less than 30 violations, except for Spain. The country recorded about 100 GDPR financial penalties, 21 of which from Vodafone. It seems that Vodafone is targeted by the Spain authority.
+
+> Most of the violating companies; were large companies; especially with large amount of data.
 
 
 ```{r table2}
