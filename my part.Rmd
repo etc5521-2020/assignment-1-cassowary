@@ -1,0 +1,61 @@
+---
+title: "Untitled"
+author: "Muhammad Soban Qasim"
+date: "17/09/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Q) According to the data which country the data regulations are prone to get violated?
+
+```{r}
+country <- gdpr_vio %>% select(name) %>%group_by(name) %>% count() %>% arrange(n)#%>% filter(n > 1)
+```
+
+```{r}
+cc <- country %>% ggplot() +  
+  geom_bar(aes(y=name,  color = n))  + ylab(" ")
+#y=reorder(name,desc(variable))
+ggplotly(cc)
+```
+
+
+```{r}
+data2 <- country                                                 # Replicate original data
+data2$name <- factor(data2$name,                                    # Factor levels in increasing order
+levels = data2$name[order(data2$y)])
+```
+
+```{r}
+words <- word_list %>% select(trigram)
+
+text <- readLines(words)
+
+docs <- Corpus(VectorSource(words))
+```
+
+```{r}
+words <- words %>% separate(trigram, c("A", "B", "C"))
+```
+
+```{r}
+words %>% filter(C == "tax")
+```
+
+
+```{r}
+word_list 
+```
+
+```{r}
+as.data.frame.character(docs) #%>% filter(sex)
+```
+
+
+```{r}
+glimpse(country)
+```
+
