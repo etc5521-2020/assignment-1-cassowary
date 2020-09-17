@@ -532,7 +532,7 @@ wordcloud2(temp, size = 0.2)
 
 In this part we want to look at are there taxes involved in articles that are there for regulating policies on Data. 
 
-```{r}
+```{r interactive_table}
 library(DT)
 library(widgetframe)
 library(htmlwidgets)
@@ -547,7 +547,7 @@ frameWidget(dt)
 dt
 ```
 
-If we look for taxes in the search bar nothing shows up, hence, suggesting there are no tax regulations in the articles, according to the data set. However, if any other search  
+In the table \@ref(tab:interactive_table), if we look for taxes in the search bar nothing shows up, hence, suggesting there are no tax regulations in the articles, according to the data set. However, the table is not limited to taxes it can be used to explore other keywords to identify which articles cover those grounds, or maybe of the user's interests. Try it, try looking up "criminal", or "sex".   
 
 
 ## Major findings
