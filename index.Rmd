@@ -375,6 +375,8 @@ tibble(id = paste0("Art. ", 1:100), count = unlist(lapply(art_list, sum))) %>%
 
 Figure \@ref(fig:artfines) shows us a violation of Article 5, 6 and 32 will lead to a relatively large fine, and with a high chance, the amount of the fine will falls between 10000-100000 euros. 
 
+
+
 ```{r artfines, fig.cap="GDPR fines by article"}
 # Init a list
 price_list <- NULL
@@ -406,6 +408,25 @@ price_list %>%
   ylab("Article number") +
   ggtitle("GDPR fines by article")
 ```
+
+## Analysis of violations by Country
+
+In this part we will be looking into the number of violations made in each country according to the data set. 
+
+```{r}
+country <- gdpr_vio %>% select(name) #%>%group_by(name) %>% count() %>% arrange(n)#%>% filter(n > 1)
+```
+
+```{r country_violation_count}
+cc <- country %>% ggplot() +  
+  geom_bar(aes(y=name))  + ylab(" ")
+#y=reorder(name,desc(variable))
+#ggplotly(cc)
+cc
+```
+
+Figure \@ref(fig:country_violation_count) shows that Spain, standing at 100 violations; has had the most recorded violations from all the countries in the data set. 
+
 
 
 ## Text mining GDPR articles
@@ -506,6 +527,27 @@ temp <- temp %>%
 
 wordcloud2(temp, size = 0.2)
 ```
+
+## What about taxes?
+
+In this part we want to look at are there taxes involved in articles that are there for regulating policies on Data. 
+
+```{r}
+library(DT)
+library(widgetframe)
+library(htmlwidgets)
+
+words <- word_list %>% select(trigram)
+
+words <- words %>% separate(trigram, c("A", "B", "C"))
+
+dt <- datatable(words, options = list(pageLength = 7), class = 'cell-border stripe', filter = 'top')
+
+frameWidget(dt)
+dt
+```
+
+If we look for taxes in the search bar nothing shows up, hence, suggesting there are no tax regulations in the articles, according to the data set. However, if any other search  
 
 
 ## Major findings
