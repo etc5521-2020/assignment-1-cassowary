@@ -44,6 +44,19 @@ h4.date {
 }
 </style>
 
+```{css, echo = FALSE}
+body{
+  font-family: Helvetica;
+  font-size: 16pt;
+}
+/* Headers */
+h1{
+  font-size: 22pt;
+}
+h2,h3{
+  font-size: 18pt;
+}
+```
 
 ```{r setup, include=FALSE}
 #Set knitr option and system language for R kernel
@@ -59,6 +72,9 @@ library(wordcloud2)
 library(bookdown)
 library(plotly)
 library(rnaturalearth)
+library(sf)
+library(colorspace)
+library(ggthemes)
 ```
 
 
@@ -246,6 +262,7 @@ gdpr_vio %>%
   theme_bw()
 ```
 
+
 ```{r outliers, fig.cap="Spatial location of outliers from 09,2019 - 03,2020"}
 ne_countries(returnclass = "sf", country = c("Poland", "Germany", "Austria", "Italy", "Netherlands", "Sweden")) %>%
   ggplot() +
@@ -255,27 +272,31 @@ ne_countries(returnclass = "sf", country = c("Poland", "Germany", "Austria", "It
   ggtitle("Spatial location of outliers from 09/2019 - 03/2020") +
   xlab("Longitude") +
   ylab("Latitude") +
-  ggthemes::theme_map()
+  ggthemes::theme_map() 
 ```
 
 
 
 
-### Characteristics of GDPR violations across countries (How commited are countries; in enforcing GDPR)
+### Characteristics of GDPR violations across countries {#country}
 
-```{r, countries-fines}
+```{r map, fig.height=8, fig.width=12, fig.align = "center", fig.cap = "Map of GDPR Accumulated Fines"}
 # extract countries in data set
 gdpr_countries <- gdpr_vio %>% 
   distinct(name) %>% 
   pull()
 
 # get sf objects; filter to countries in data set
-countries_sf <- ne_countries(country = c(gdpr_countries,
+countries_sf <- ne_countries(country = c(gdpr_countries, 
                                          "Czechia"), # for Czech Republic
                              scale = "large",
                              returnclass = "sf") %>% 
-  select(name, geometry) %>% 
-  mutate(name = replace(name, name == "Czechia", "Czech Republic"))
+  select(name, geometry, pop_est) %>% 
+  mutate(name = replace(name, name == "Czechia", "Czech Republic")) %>% 
+  mutate(centroid = st_centroid(geometry)) %>% 
+  # provide centroid for country
+  mutate(c.x = map_dbl(centroid, 1),
+         c.y = map_dbl(centroid, 2)) 
 
 # Group fines by country; merge with sf
 countries_map <- gdpr_vio %>% 
@@ -295,55 +316,158 @@ countries_map <- gdpr_vio %>%
   select(name, price_sum, price_cat) %>% 
   distinct()
 
+countries_map$price_cat <- factor(countries_map$price_cat, levels = c("0-10K", "10K-50K", "50K-100K", "100K-500K", "500K-1M", "1M-10M", ">10M"))
+
+# copied Countries & coordinates data from https://developers.google.com/public-data/docs/canonical/countries_csv
+centroids <- read_tsv("data/countries.tsv") %>% 
+  select(longitude, latitude, name) %>% 
+  inner_join(countries_map)
+  
+
 # join countries_map data set with geom info
-countries_map <- left_join(countries_map, countries_sf,
-          by = c("name"))
+countries_map <- left_join(countries_map, countries_sf, by = c("name")) %>% 
+  inner_join(centroids)
+  
 
 countries_map %>% 
   ggplot() +
   geom_sf(aes(geometry = geometry,
               fill = price_cat)) +
-  scale_fill_viridis(discrete = TRUE) +
   # zoom in; by setting limits 
   coord_sf(xlim = c(-27.5, 37.5),
            ylim = c(32.5, 82.5),
-           expand = FALSE) # take; exact limits (xlim/ ylim)
-
+           expand = FALSE) + # take; exact limits (xlim/ ylim)
+  colorspace::scale_fill_discrete_sequential(palette = "Reds 3", 
+                                            rev = TRUE)+
+  labs(fill = "accumulated fine category",
+       title = "Map of EU",
+       subtitle = "Accumulated GDPR Fines") +
+  theme_map() +
+  theme(legend.position = "right") +
+  geom_text(data = countries_map, 
+            aes(label = name,
+                x = longitude - 0.2,
+                y = latitude),
+            check_overlap = TRUE) +
+  theme(plot.background = element_rect(fill = "#add8e6"),
+        legend.background = element_rect(fill = "#add8e6"),
+        plot.title = element_text(size = 55),
+        plot.subtitle = element_text(size = 30)) 
+  
 ```
+Figure \@ref(fig:map) depicts accumulated fines per country. Accumulated fines appear to be concentrated in the middle where populations are dense. 
 
 
 ```{r plot3, fig.cap="Boxplot of GDPR fines by country"}
-# Sort boxplots by median price
-gdpr_vio %>%
-  filter(!is.na(price)) %>%
-  group_by(name) %>%
-  summarise(md = median(price, na.rm = TRUE)) %>%
-  right_join(filter(gdpr_vio, !is.na(price))) %>%
-  ggplot() +
-  geom_boxplot(aes(price, fct_reorder(name, md, .desc = F))) +
-  scale_x_log10() +
-  ylab("Country") + 
-  xlab("Price (log10 scale)") +
-  ggtitle("Boxplot of GDPR fines by country") +
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-From Figure \@ref(fig:plot3), we can clearly observe a difference between developed countries and developing countries. Generally, authorities of countries with high GDP are more likely to issue large GDPR fines.
-
-```{r plot4, fig.cap = "Number of GDPR violations by country, 2018-2020"}
-gdpr_vio %>% 
+gdpr_vio_box <- gdpr_vio %>% 
   group_by(name) %>% 
-  summarise (count = n()) %>%
-  ggplot(aes(x = count, y = fct_reorder(name, count))) +
-  geom_bar(stat = "identity", aes(fill = count>50)) +
-  xlab("Number of Violations")+
-  ylab("Country") +
-  labs(title = "Number of GDPR Violations by country, 2018-2020") +
-  scale_fill_manual(values = c("navyblue", "#D7261E")) + 
-  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+  mutate(
+    # sum fines in each country
+    price_sum = sum(price, na.rm = TRUE),
+    # price category
+    price_cat = case_when(
+      price_sum >= 0 & price_sum <= 10000 ~ "0-10K",
+      price_sum > 10000 & price_sum <= 50000 ~ "10K-50K",
+      price_sum > 50000 & price_sum <= 100000 ~ "50K-100K",
+      price_sum > 10000 & price_sum <= 500000 ~ "100K-500K",
+      price_sum > 500000 & price_sum <= 1000000 ~ "500K-1M",
+      price_sum > 1000000 & price_sum <= 10000000 ~ "1M-10M",
+      price_sum > 10000000 ~ ">10M")) %>% 
+  mutate(color = case_when(
+    price_cat == "0-10K" ~ "#D8B2B3",
+    price_cat == "10K-50K" ~ "#CD9B9C",
+    price_cat == "50K-100K" ~ "#C08284",
+    price_cat == "100K-500K" ~ "#B2686B",
+    price_cat == "500K-1M" ~ "#A34C50",
+    price_cat == "1M-10M" ~ "#922D33",
+    price_cat == ">10M" ~ "#7F000D"
+  ))
+sequential_hcl(n = 20, palette = "Reds 2")
+
+gdpr_vio_box %>%
+filter(!is.na(price)) %>%
+ggplot() +
+geom_boxplot(aes(x = price, 
+                 y = fct_reorder(name, price),
+                 color = I(color)),
+             fatten = 4) +
+  scale_x_log10() +
+  labs(y = "Country", x = "Log Price") +
+ggtitle("Boxplot of GDPR fines by country") +
+theme(plot.title = element_text(hjust = 0.5))
 ```
 
-Figure \@ref(fig:plot4) demonstrates the number of fined GDPR violations by country from 2018 to 2020. While all country in the EU has less than 35 cases of GDPR violations except for Spain, which has nearly 100 cases, triple than that of Hungary, the second highest. This is an noticable trend that require further research. 
+Boxplot in Figure \@ref(fig:plot3) is shaded according to the price categories in \@ref(fig:map). It is not necessarily that a country with the highest accumulated fines(in absolute € terms) has the most number of price dished out. For example, Netherlands has €3.49M in accumulated fines but has the highest median in fine price.
+
+```{r plot4, fig.cap = "Number of GDPR violations by country, from 2018-2020"}
+countries_count <- gdpr_vio %>% 
+  group_by(name) %>% 
+  summarize(no_of_fines = n(),
+            acc_fine = sum(price, na.rm = TRUE)) %>% 
+  # get population data
+  inner_join(countries_map) %>% 
+  select(name, pop_est, no_of_fines, acc_fine) %>% 
+  mutate(fines_per_100k = round(100000*(no_of_fines/as.numeric(pop_est)),2)) %>% 
+  mutate(acc_fine = case_when(
+    acc_fine >= 1000000 ~ paste0("€", round(acc_fine/1000000, 2),"M"),
+    acc_fine <= 1000000 ~ paste0("€", round(acc_fine/1000000, 2),"K")
+  )) 
+
+
+countries_count %>% 
+  ggplot() +
+  geom_point(aes(x = no_of_fines,
+                 y = fct_reorder(name, no_of_fines)), # order countries; in terms of number of fines
+             colour = "blue",
+             size = 10) +
+  geom_segment(aes(x = no_of_fines,
+                   xend = 0,
+                   y = name,
+                   yend = name),
+               colour = "blue") +
+  labs(y = "country",
+       x = "number of fines") +
+  geom_segment(aes(x = no_of_fines,
+                   xend = 110,
+                   y = name,
+                   yend = name),
+               alpha = 0.5) +
+  geom_text(aes(x = no_of_fines,
+                y = name,
+                label = no_of_fines),
+            colour = "white") +
+  geom_text(aes(x = 115,
+                y = name,
+                label = fines_per_100k),
+            size = 4) +
+  geom_text(aes(x = 135,
+                y =  name,
+                label = acc_fine),
+            size = 4) +
+  annotate(geom = "text",
+           x = 113,
+           y = 31,
+           label = "no of fines \nper 100k") +
+  annotate(geom = "Text",
+           x = 50,
+           y = 31,
+           label = "Total Breaches",
+           size = 4) +
+  annotate(geom = "text",
+           x = 140,
+           y = 31,
+           label = "accumulated \nfine",
+           size = 4) +
+  expand_limits(y = c(0,35),
+                x = c(0, 145)) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) +
+  theme_bw() 
+```
+
+Figure \@ref(fig:plot4) demonstrates the number of fined GDPR violations by country from 2018 to 2020. All country in the EU has less than 35 cases of GDPR fines except for Spain, which has nearly 100 cases. Some exorbitant fines can be seen such as France which accumulated 51M in 5 fines. 
 
 ### Characteristics of GDPR violations across corporations
 
@@ -435,7 +559,9 @@ tibble(id = paste0("Art. ", 1:100), count = unlist(lapply(art_list, sum))) %>%
   ylab("Article number") +
   labs(title = "Number of GDPR violations by article") + 
   scale_fill_manual(values = c("navyblue", "#D7261E")) +
-  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none") +
+  theme_bw() +
+  guides(fill = FALSE)
 
 ```
 
@@ -591,8 +717,9 @@ Another research field that can be focusd on is the issues in the "Processing" o
 
 # Conclusion  
 
+GDPR is one of the most widely touted regulation for personal data protection. From the characteristics of fines given out in countries in \@ref(country), there is a disparity in implementation - some countries catch the "big fishes" while some go for volumes. Most of the fines occur at the end the end of the year and first few months of a new year.
 
-GDPR is one of the most famous regulations on personal data protection. There are some suspicious clustering of GDPR fines issued in the last quarter of 2019 and the first quarter of 2020. Besides, no such evidence supports that GDPR was generally used as an alternative to "digital service tax" against multinational corporations. However, one particular corporation, Vodafone, was targeted by the Spanish Data Protection Authority multiple times, which might be a special case. Moreover, the GDPR fines revealed that the most serious privacy issue in EU is the processing of personal data.
+ Besides, no such evidence supports that GDPR was generally used as an alternative to "digital service tax" against multinational corporations. However, one particular corporation, Vodafone, was targeted by the Spanish Data Protection Authority multiple times, which might be a special case. Moreover, the GDPR fines revealed that the most serious privacy issue in EU is the processing of personal data.
 
 # Acknowledgement
 
