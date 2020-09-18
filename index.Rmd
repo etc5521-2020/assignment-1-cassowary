@@ -817,22 +817,26 @@ Besides, no such evidence supports that GDPR was generally used as an alternativ
 
 With the regulation still in its novelty stage, it would be interesting to follow where it goes from here.
 
+
 # Acknowledgement
 
-Following R packages are used in producing this research:
-- colorspace: @colorspace
-- rmarkdown: @rmarkdown
-- tidyverse: @tidyverse 
-- kableExtra: @kableExtra 
-- ggplot2: @ggplot2 
-- plotly: @plotly 
-- bookdown: @bookdown 
-- wordcloud2: @wordcloud2 
-- lubridate: @lubridate 
-- tidytext: @tidytext
-- rnaturalearth: @rna
-- DT @DT_Package
-- widgetframes @Widgetframe
-- Htmlwidgets @
+Following R packages are used in producing this research:  
+- colorspace: @colorspace  
+- rmarkdown: @rmarkdown  
+- tidyverse: @tidyverse     
+- kableExtra: @kableExtra   
+- ggplot2: @ggplot2  
+- plotly: @plotly   
+- bookdown: @bookdown   
+- wordcloud2: @wordcloud2   
+- lubridate: @lubridate   
+- tidytext: @tidytext  
+- rnaturalearth: @rna  
+- sf: @sf
+- DT @DT  
+- widgetframes @widframe    
+- Htmlwidgets @htmlwidgets  
+
+
 # References
 
