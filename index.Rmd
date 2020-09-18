@@ -611,6 +611,8 @@ Following R packages are used in producing this research:
 - lubridate: @lubridate 
 - tidytext: @tidytext
 - rnaturalearth: @rna
-
+- DT @DT_Package
+- widgetframes @Widgetframe
+- Htmlwidgets @
 # References
 
