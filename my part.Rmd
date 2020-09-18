@@ -7,19 +7,30 @@ output: html_document
 
 ```{r setup, include=FALSE} 
 knitr::opts_chunk$set(echo = TRUE) 
+library(tidyverse)
+library(lubridate)
+library(kableExtra)
+library(tidytext)
+library(wordcloud2)
+library(bookdown)
+library(plotly)
+library(rnaturalearth)
+library(readr)
+library(DT)
 ```
 
 Q) According to the data which country the data regulations are prone to get violated?
 
 ```{r}
-country <- gdpr_vio %>% select(name) %>%group_by(name) %>% count() %>% arrange(n)#%>% filter(n > 1)
+country <- gdpr_vio %>% select(name) #%>%group_by(name) %>% count() %>% arrange(n)#%>% filter(n > 1)
 ```
 
 ```{r}
 cc <- country %>% ggplot() +  
-  geom_bar(aes(y=name,  color = n))  + ylab(" ")
+  geom_bar(aes(y=name))  + ylab(" ")
 #y=reorder(name,desc(variable))
-ggplotly(cc)
+#ggplotly(cc)
+cc
 ```
 
 
@@ -58,4 +69,42 @@ as.data.frame.character(docs) #%>% filter(sex)
 ```{r}
 glimpse(country)
 ```
+
+```{r}
+library(DT)
+library(widgetframe)
+library(htmlwidgets)
+dt <- datatable(words, options = list(pageLength = 7), class = 'cell-border stripe', filter = 'top')
+
+frameWidget(dt)
+dt
+```
+
+
+
+```{r}
+dt
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
