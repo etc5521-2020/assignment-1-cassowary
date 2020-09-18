@@ -760,7 +760,19 @@ dt_wordlist <- word_list %>%
 ```
 
 ```{r}
-DT::datatable(dt_wordlist, width = '55%', options = list(scrollX = TRUE))
+dt_wordlist <- DT::datatable(dt_wordlist, 
+              colnames = c("Article",
+                           "Trigram",
+                           "Count"),
+              filter = "top",
+              rownames = FALSE,
+              extensions = c("Scroller",
+                             "FixedColumns"), 
+              options = list(pageLength = 10,
+                             scrollY = "200px",
+                             scrollX = TRUE))
+
+widgetframe::frameWidget(dt_wordlist)
 ```
 
 Trigram analysis can often provide us with more useful information about a text document. Figure \@ref(fig:wordc2) provides us with very special "GDPR" words. We can see "data protection officer", which is probably the officer work for the authority, and "competent supervisory authority", which is probably referring to the data protection authority.
