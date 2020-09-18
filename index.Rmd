@@ -72,6 +72,7 @@ library(tidytext)
 library(wordcloud2)
 library(bookdown)
 library(plotly)
+library(knitr)
 library(rnaturalearth)
 library(sf)
 library(colorspace)
@@ -83,6 +84,9 @@ library(DT)
 
 [This assignment is for ETC5521 Assignment 1 by Team `r rmarkdown::metadata$team` comprising of `r knitr::combine_words(rmarkdown::metadata$author)`.]{style="color:#006DAE;"}
 
+```{r, fig.cap = "GDPR logo (Source: Training Journal (2018))", out.width="200%"}
+knitr::include_graphics("images/gdprlogo.jpg")
+```
 
 # Introduction and motivation
 
@@ -753,17 +757,11 @@ word_list <- gdpr_text %>%
 ```{r}
 dt_wordlist <- word_list %>% 
   arrange(-count) 
-
-dt_wordlist <-  DT::datatable(dt_wordlist,
-          extensions = c("Scroller",
-                         "FixedColumns"),
-          options = list(pageLength = 10,
-                         scrollX= T,
-                         scrollY = "200px"))
-
-widgetframe::frameWidget(dt_wordlist)
 ```
 
+```{r}
+DT::datatable(dt_wordlist, width = '55%', options = list(scrollX = TRUE))
+```
 
 Trigram analysis can often provide us with more useful information about a text document. Figure \@ref(fig:wordc2) provides us with very special "GDPR" words. We can see "data protection officer", which is probably the officer work for the authority, and "competent supervisory authority", which is probably referring to the data protection authority.
 
