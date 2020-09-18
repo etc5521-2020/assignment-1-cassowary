@@ -203,6 +203,12 @@ Three secondary questions are addressed in this research:
 
 ## GDP violations across time since its implementation
 
+```{css}
+table {
+  background-color: #87adf1;
+}
+```
+
 ```{r plot2, fig.cap="Monthly number of GDPR violations by year, 2018-2020"}
 color_eu <- c("#0a0af5", # blue
            "#f50a0a", # red
