@@ -508,7 +508,7 @@ temp <- temp %>%
 wordcloud2(temp, size = 0.2)
 ```
 
-## What about taxes?
+## What about taxes, which articles reflect on the regulations regarding taxes in terms of data?
 
 ```{r, eval= FALSE}
 reactable(temp, 
