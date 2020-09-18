@@ -1,0 +1,54 @@
+---
+title: "Data Exploration"
+author: "Brenwin"
+date: "10/09/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+```
+
+```{r}
+gdpr_text <- read_tsv("data/gdpr_text.tsv")
+
+gdpr_vio <- read_tsv("data/gdpr_violations.tsv")
+
+# Normal data cleaning
+gdpr_vio <- gdpr_vio %>% 
+  # set price <= 0 = NA; since; no fines given yet; in trial etc. 
+  mutate(price = if_else(price <= 0, NA_real_, price)) %>%
+  # change date from character to Date variable
+  mutate(date = as.Date(date, "%m/%d/%Y")) %>%
+  # rid; date < 2010; since; GDPR; not institutionalized 
+  mutate(date = if_else(date < "2010-01-01", NA_Date_, date)) %>%
+  # clean controller names
+  mutate(controller = if_else(controller == "Google Inc.", "Google", controller)) %>%
+  mutate(controller = if_else(tolower(controller) == "unknown company", "Company", controller)) %>%
+  mutate(controller = if_else(tolower(controller) %in% c("unknown", "unknwon", "unknown organization", "not known", "not disclosed", "not available"), "Unknown", controller)) %>%
+  mutate(controller = if_else(tolower(controller) == "tusla child and family agency", "Tusla", controller)) %>%
+  mutate(controller = if_else(tolower(controller) == "telefonica", "Telefónica SA", controller)) %>%
+  mutate(controller = if_else(controller == "Vodafone España, S.A.U.", "Vodafone Espana", controller)) %>%
+  mutate(controller = if_else(controller == "Vodafone Espana", "Vodafone España", controller)) %>%
+  mutate(controller = if_else(tolower(controller) == "telecommunication service provider", "Telecom company", controller)) %>%
+  mutate(controller = if_else(controller %in% c("Private person", "Private person"), "Private individual", controller)) %>%
+  mutate(controller = if_else(controller %in% c("A bank", "bank", "Bank (unknown)"), "Bank", controller)) %>%
+  mutate(controller = if_else(controller == "A mayor", "Mayor", controller)) %>%
+  mutate(controller = if_else(controller == "bank", "Bank", controller)) %>%
+  mutate(article_violated = if_else(article_violated == "Failure to implement sufficient measures to ensure information security", "Art.32 GDPR", article_violated))
+```
+
+# gdpr_vio
+```{r}
+gdpr_vio %>% 
+  count(type) %>%
+  arrange(-n) 
+```
+
+
+
+
+
+
