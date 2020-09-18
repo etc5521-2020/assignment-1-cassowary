@@ -60,6 +60,10 @@ library(bookdown)
 library(plotly)
 library(rnaturalearth)
 library(readr)
+library(reactable)
+library(DT)
+library(widgetframe)
+library(htmlwidgets)
 ```
 
 [This assignment is for ETC5521 Assignment 1 by Team `r rmarkdown::metadata$team` comprising of `r knitr::combine_words(rmarkdown::metadata$author)`.]{style="color:#006DAE;"}
@@ -242,6 +246,7 @@ gdpr_vio %>%
 ### Characteristics of GDPR violations across countries
 
 ```{r plot3, fig.cap="Boxplot of GDPR fines by country"}
+options(scipen=999)
 # Sort boxplots by median price
 gdpr_vio %>%
   filter(!is.na(price)) %>%
@@ -368,11 +373,12 @@ tibble(id = paste0("Art. ", 1:100), count = unlist(lapply(art_list, sum))) %>%
 
 ```
 
-Figure \@ref(fig:artfines) shows us a violation of Article 5, 6 and 32 will lead to a relatively large fine, and with a high chance, the amount of the fine will falls between 10000-100000 euros. 
+Figure \@ref(fig:artfines) shows us a violation of Article 5, 6 and 32 will lead to a relatively large fine, and with a high chance, the amount of the fine will falls between 10,000-100,000 euros. 
 
 
 
 ```{r artfines, fig.cap="GDPR fines by article"}
+options(scipen=999)
 # Init a list
 price_list <- NULL
 
@@ -465,7 +471,6 @@ word_list %>%
 
 ```{r}
 # Extract trigrams
-
 word_list <- gdpr_text %>%
   select(article, text = gdpr_text) %>%
   unnest_tokens(trigram, text, token = 'ngrams', n = 3) %>%
@@ -491,7 +496,6 @@ Ignore these highly complicated article phrases, we can still find some interest
 ```{r wordc2, fig.cap="Word cloud of trigram in GDPR"}
 # Drop article attribute
 temp <- data.frame(word = word_list$trigram, count = word_list$count)
-
 # Use the trigrams to build word cloud
 temp <- temp %>%
   filter(!grepl("\\d", word)) %>%
@@ -499,30 +503,78 @@ temp <- temp %>%
   summarise(count = n()) %>%
   ungroup() %>%
   arrange(desc(count))
-
 wordcloud2(temp, size = 0.2)
 ```
 
 ## What about taxes?
 
+```{r, eval= FALSE}
+reactable(temp, 
+          searchable = TRUE, 
+          minRows = 10, 
+          bordered = TRUE,
+          striped = TRUE,
+          highlight = TRUE)
+```
+
+
+
 In this part we want to look at are there taxes involved in articles that are there for regulating policies on Data. 
 
-```{r interactive_table}
-library(DT)
-library(widgetframe)
-library(htmlwidgets)
+```{r interacttable, eval=FALSE}
 
+#could not get the tables to show in the html
 words <- word_list %>% select(trigram)
 
 words <- words %>% separate(trigram, c("A", "B", "C"))
 
-dt <- datatable(words, options = list(pageLength = 7), class = 'cell-border stripe', filter = 'top')
+#dt <-  
+datatable(words, options = list(pageLength = 7), class = 'cell-border stripe', filter = 'top')
 
-frameWidget(dt)
-dt
+
+#htmlwidgets::createWidget(words, dt)
+
+#dt <- frameWidget(dt, width = "100%")
+#frameWidget(datatable(words, options = list(pageLength = 7), class = 'cell-border stripe', filter = 'top'))
+
+ 
+
+#frameWidget(datatable(words, options = list(pageLength = 7), class = 'cell-border stripe', filter = 'top'))
 ```
 
-In the table \@ref(tab:interactive_table), if we look for taxes in the search bar nothing shows up, hence, suggesting there are no tax regulations in the articles, according to the data set. However, the table is not limited to taxes it can be used to explore other keywords to identify which articles cover those grounds, or maybe of the user's interests. Try it, try looking up "criminal", or "sex".   
+
+```{r interactive_table, eval=FALSE}
+
+#could not get the tables to show up in the html
+options(reactable.theme = reactableTheme(
+  color = "hsl(233, 9%, 87%)",
+  backgroundColor = "hsl(233, 9%, 19%)",
+  borderColor = "hsl(233, 9%, 22%)",
+  stripedColor = "hsl(233, 12%, 22%)",
+  highlightColor = "hsl(233, 12%, 24%)",
+  inputStyle = list(backgroundColor = "hsl(233, 9%, 25%)"),
+  selectStyle = list(backgroundColor = "hsl(233, 9%, 25%)"),
+  pageButtonHoverStyle = list(backgroundColor = "hsl(233, 9%, 25%)"),
+  pageButtonActiveStyle = list(backgroundColor = "hsl(233, 9%, 28%)")
+))
+
+
+dt <- reactable(words, 
+          searchable = TRUE, 
+          minRows = 10, 
+          bordered = TRUE,
+          striped = TRUE,
+          highlight = TRUE)
+dt 
+
+#In the Table \@ref(tab:interactive_table), if we look for taxes in the search bar nothing shows up, hence, suggesting there are no tax regulations in the articles, according to the data set. However, the table is not limited to taxes it can be used to explore other keywords to identify which articles cover those grounds, or maybe of the user's interests. Try it, try looking up "criminal", or "sex".
+```
+
+Using the dataset for the word clouds, a deep analysis was conducted in the articles to look into the articles, if they regulated any types of tax or taxes on data. Upon exploration of the dataset, it was found that no tax regulations are in place under the articles from the dataset. Therefore, it can be said that there are only fines listed in the General Data Protection Regulations. 
+
+
+
+   
 
 
 ## Major findings
