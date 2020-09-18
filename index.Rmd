@@ -112,11 +112,6 @@ gdpr_vio <- mutate(gdpr_vio, price = if_else(price <= 0, NA_real_, price)) %>%
 ```
 
 
-```{r}
-unique(gdpr_text$gdpr_text) 
-```
-
-
 The data is scraped from @Privacy-Affairs by @Ellis-Hughes, posted on @Tidy-Tuesday. We adapted the scripts they used and removed duplication of GDPR fines due to multiple sources. We collected data from 2018-05-12 to 2020-08-21. 
 
 Abnormal values including fines with 0 price, which indicate ongoing trails and fines before the establishment of the GDPR, which are obviously missing value, are set to be NA. All records with the missing date are set to NA. We also further process inconsistency in corporation names. There are unnamed organizations that were fined by GDPR. In this report, all unnamed organizations are labelled as "Unknown". 
@@ -408,26 +403,6 @@ price_list %>%
   ylab("Article number") +
   ggtitle("GDPR fines by article")
 ```
-
-## Analysis of violations by Country
-
-In this part we will be looking into the number of violations made in each country according to the data set. 
-
-```{r}
-country <- gdpr_vio %>% select(name) #%>%group_by(name) %>% count() %>% arrange(n)#%>% filter(n > 1)
-```
-
-```{r country_violation_count}
-cc <- country %>% ggplot() +  
-  geom_bar(aes(y=name))  + ylab(" ")
-#y=reorder(name,desc(variable))
-#ggplotly(cc)
-cc
-```
-
-Figure \@ref(fig:country_violation_count) shows that Spain, standing at 100 violations; has had the most recorded violations from all the countries in the data set. 
-
-
 
 ## Text mining GDPR articles
 
