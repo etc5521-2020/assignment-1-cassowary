@@ -572,7 +572,7 @@ dt
 #In the Table \@ref(tab:interactive_table), if we look for taxes in the search bar nothing shows up, hence, suggesting there are no tax regulations in the articles, according to the data set. However, the table is not limited to taxes it can be used to explore other keywords to identify which articles cover those grounds, or maybe of the user's interests. Try it, try looking up "criminal", or "sex".
 ```
 
-Using the dataset for the word clouds, a deep analysis was conducted in the articles to look into the articles, if they regulated any types of tax or taxes on data. Upon exploration of the dataset, it was found that no tax regulations are in place under the articles from the dataset. Therefore, it can be said that there are only fines listed in the General Data Protection Regulations. 
+Using the dataset for the word clouds, a deep analysis was conducted in the articles to look into the textual composition of the articles, if they regulated any types of tax or taxes on data. Upon exploration of the dataset, by making substrings, it was found that no tax regulations are in place under the articles from the dataset. Therefore, it can be said that there are only fines listed in the General Data Protection Regulations. 
 
 
 
